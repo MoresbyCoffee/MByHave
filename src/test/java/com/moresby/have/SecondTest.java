@@ -30,15 +30,7 @@
  */
 package com.moresby.have;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.junit.Ignore;
 import org.junit.Test;
-
-import com.moresby.have.annotations.Given;
-
 
 /**
  * TODO javadoc.
@@ -46,44 +38,11 @@ import com.moresby.have.annotations.Given;
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class MyTests {
-
-    @Given("given text {firstParam} {secondParam} blah blah")
-    public void givenMethod(final String firstParam, final String secondParam) {
-        System.out.println("givenMethod");
-    }
-
-    @Given("second text {firstParam} {secondParam}")
-    public void secondGivenMethod(final String firstParam, final String secondParam) {
-        System.out.println("secondGivenMethod");
-    }
+public class SecondTest {
 
     @Test
-    public void test() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        new mByHave(this).given("second text blah blah").given("given text blah blah blah blah");
-
+    public void test() {
+        System.out.println("-------------------------------------------- TEST");
     }
 
-    @Test
-    @Ignore
-    public void regExpTest() {
-
-        final String regex = "blah (\\w*) blah";
-        final String input = "blah blah2 blah";
-
-        final Pattern pattern = Pattern.compile(regex);
-        final Matcher matcher = pattern.matcher(input);
-
-        while(matcher.find()) {
-            System.out.println("Find: " + matcher.start() + " - " + matcher.end() + " cont: " + matcher.group() + " " + matcher.groupCount());
-            for (int i = 0; i <= matcher.groupCount(); i++) {
-                System.out.println("Group: " + matcher.group(i));
-            }
-        }
-
-
-
-
-    }
 }
-
