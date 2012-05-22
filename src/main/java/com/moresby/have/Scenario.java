@@ -30,7 +30,6 @@
  */
 package com.moresby.have;
 
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * TODO javadoc.
@@ -40,8 +39,8 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class Scenario {
 
-    public static mByHave given(final String given) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        return new mByHave(given).given(given); //TODO
-    }
+//    public static mByHave given(final String given) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+//        return new mByHave(given).given(given); //TODO
+//    }
 
 }

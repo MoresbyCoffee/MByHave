@@ -64,15 +64,13 @@ public class StepCandidate {
 
 
     private final String               value;
-    private final int                  priority;
     private final Method               method;
     private final Map<Integer, StepCandidate.MethodParameter> parameterPositions;
     private final Pattern              pattern;
 
 
-    public StepCandidate(final String value, final int priority, final Method method, final Map<Integer, StepCandidate.MethodParameter> parameterPositions, final String regEx) {
+    public StepCandidate(final String value, final Method method, final Map<Integer, StepCandidate.MethodParameter> parameterPositions, final String regEx) {
         this.value              = value;
-        this.priority           = priority;
         this.method             = method;
         this.parameterPositions = Collections.unmodifiableMap(parameterPositions);
         this.pattern            = Pattern.compile(regEx);
@@ -80,10 +78,6 @@ public class StepCandidate {
 
     public String getValue() {
         return value;
-    }
-
-    public int getPriority() {
-        return priority;
     }
 
     public Method getMethod() {

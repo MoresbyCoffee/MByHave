@@ -30,25 +30,103 @@
  */
 package com.moresby.have;
 
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
 
+import com.thoughtworks.paranamer.BytecodeReadingParanamer;
+import com.thoughtworks.paranamer.CachingParanamer;
+import com.thoughtworks.paranamer.Paranamer;
+
+import com.moresby.have.StepCandidate.MethodParameter;
+import com.moresby.have.annotations.Given;
+import com.moresby.have.annotations.Then;
+import com.moresby.have.annotations.When;
+
 /**
  * TODO javadoc.
+ *
+ * TODO exception handling. Hide the inside behavior, concentrate on the real problem.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
 public class mByHaveRunner extends BlockJUnit4ClassRunner {
 
+
+    private final List<StepCandidate> givenCandidates = new ArrayList<StepCandidate>();
+    private final List<StepCandidate> whenCandidates  = new ArrayList<StepCandidate>();
+    private final List<StepCandidate> thenCandidates  = new ArrayList<StepCandidate>();
+
     /**
-     * @param klass
+     * @param testClass
      * @throws InitializationError
      */
-    public mByHaveRunner(final Class<?> klass) throws InitializationError {
-        super(klass);
+    public mByHaveRunner(final Class<?> testClass) throws InitializationError {
+        super(testClass);
+        initStepCandidates(Given.class, testClass, givenCandidates);
+        initStepCandidates(When.class,  testClass, whenCandidates );
+        initStepCandidates(Then.class,  testClass, thenCandidates );
+
+    }
+
+    private static <T extends Annotation> String getAnnotationValue(final Class<T> annotation, final Method method) {
+        if (annotation == Given.class) {
+            if (method.isAnnotationPresent(Given.class)) {
+                final Given given = method.getAnnotation(Given.class);
+                return given.value();
+            }
+        } else if (annotation == When.class) {
+            if (method.isAnnotationPresent(When.class)) {
+                final When when = method.getAnnotation(When.class);
+                return when.value();
+            }
+        } else if (annotation == Then.class) {
+            if (method.isAnnotationPresent(Then.class)) {
+                final Then then = method.getAnnotation(Then.class);
+                return then.value();
+            }
+        }
+        return null;
+    }
+
+
+    private static <T extends Annotation> void initStepCandidates(final Class<T> annotation, final Class<?> testClass, final List<StepCandidate> stepCandidatesList) {
+        for (final Method method : testClass.getDeclaredMethods()) {
+            final String definitionValue = getAnnotationValue(annotation, method);
+            if (definitionValue != null) {
+                System.out.println("Given: " + definitionValue);
+
+                final String[] params = getParameters(method);
+                final Map<Integer, MethodParameter> parameterPositions = findParameterPositions(params, definitionValue);
+
+
+                for(final Map.Entry<Integer, MethodParameter> paramPos : parameterPositions.entrySet()) {
+                    System.out.println("Position: " + paramPos.getKey() + " Param: " + paramPos.getValue().getParamName());
+                }
+                final String regEx = createRegEx(definitionValue, Arrays.asList(params));
+
+                System.out.println("RegEx: " + regEx);
+
+                stepCandidatesList.add(new StepCandidate(definitionValue, method, parameterPositions, regEx));
+
+            }
+        }
     }
 
     /** {@inheritDoc} */
@@ -63,5 +141,116 @@ public class mByHaveRunner extends BlockJUnit4ClassRunner {
     public void run(final RunNotifier notifier) {
         super.run(notifier);
     }
+
+
+
+    private static String[] getParameters(final Method method) {
+        System.out.println("Paranamer");
+        final Paranamer paranamer = new CachingParanamer(new BytecodeReadingParanamer());
+        final String[] params = paranamer.lookupParameterNames(method, false);
+        return params;
+    }
+
+    public static Map<Integer, MethodParameter> findParameterPositions(final String[] params, final String stepValue) {
+
+        final Map<Integer, MethodParameter> result = new TreeMap<Integer, MethodParameter>();
+        if (params != null) {
+            for (int i = 0; i < params.length; i++) {
+                final String param = params[i];
+                System.out.println("param: " + param);
+                final String paramPlaceHolder = "{" + param + "}";
+                final int position = stepValue.indexOf(paramPlaceHolder);
+                System.out.println("Position: " + position);
+                if (position < 0) {
+//                    continue;
+                    throw new IllegalArgumentException(); //TODO other exception
+                }
+                if (stepValue.indexOf(paramPlaceHolder, position + param.length()) >= 0) {
+                    throw new IllegalArgumentException(); //TODO Too many parameters.
+                }
+                result.put(Integer.valueOf(position), new MethodParameter(param, i));
+            }
+        }
+        return result;
+    }
+
+    public static String createRegEx(final String stepValue, final Collection<String> params) {
+        String regEx = stepValue;
+        for (final String param : params) {
+            final String paramPlaceHolder = "{" + param + "}";
+            regEx = regEx.replace(paramPlaceHolder, "(.*)");
+        }
+        return regEx;
+    }
+
+    private void runCandidate(final Object testObject, final StepCandidate candidate, final Matcher matcher) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        final Map<Integer, MethodParameter> positions = candidate.getParameterPositions();
+        int i = 1;
+
+        final SortedMap<Integer, String> methodParameters = new TreeMap<Integer, String>();
+        for (final MethodParameter param : positions.values()) {
+            final String paramValue = matcher.group(i++);
+            methodParameters.put(param.getParamPos(), paramValue);
+            System.out.println("Parameter name: " + param.getParamName() + " Value: " + paramValue);
+        }
+
+        System.out.println("Params: " + candidate.getMethod().getParameterTypes().length);
+
+        candidate.getMethod().invoke(testObject, methodParameters.values().toArray());
+
+    }
+
+    private void runStep(final Object testObject, final String step, final Collection<StepCandidate> stepCandidates) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        boolean found = false;
+        for (final StepCandidate candidate : stepCandidates) {
+            final Matcher matcher = candidate.getPattern().matcher(step);
+            if (matcher.find()) {
+                found = true;
+                System.out.println("FOUND! " + candidate.getValue());
+                runCandidate(testObject, candidate, matcher);
+                break;
+            }
+        }
+        if (!found) {
+            throw new IllegalArgumentException("No maching step");
+        }
+
+    }
+
+    public void given(final Object testObject, final String given) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        runStep(testObject, given, givenCandidates);
+    }
+
+    public void when(final Object testObject, final String when) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        runStep(testObject, when, whenCandidates);
+    }
+
+    public void then(final Object testObject, final String then) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        runStep(testObject, then, thenCandidates);
+    }
+
+    public void runScenario(final Object testObject, final String scenario) {
+        final String regEx = "^(Given|When|Then)\\s(.*)";
+        final Matcher matcher = Pattern.compile(regEx).matcher(scenario);
+        while (matcher.find()) {
+            for (int i = 1; i <= matcher.groupCount(); i++) {
+                System.out.println("Group: " + matcher.group(i));
+            }
+        }
+
+    }
+
+    public void runScenario(final Object testObject, final InputStream scenario) {
+        runScenario(testObject, convertStreamToString(scenario));
+    }
+
+    private String convertStreamToString(final InputStream is) {
+        try {
+            return new java.util.Scanner(is).useDelimiter("\\A").next();
+        } catch (final java.util.NoSuchElementException e) {
+            return "";
+        }
+    }
+
 
 }

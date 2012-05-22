@@ -31,23 +31,8 @@
 package com.moresby.have;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.regex.Matcher;
 
-import org.junit.runner.RunWith;
-
-import com.thoughtworks.paranamer.BytecodeReadingParanamer;
-import com.thoughtworks.paranamer.CachingParanamer;
-import com.thoughtworks.paranamer.Paranamer;
-
-import com.moresby.have.StepCandidate.MethodParameter;
-import com.moresby.have.annotations.Given;
+import org.junit.runners.model.InitializationError;
 
 /**
  * TODO javadoc.
@@ -55,133 +40,38 @@ import com.moresby.have.annotations.Given;
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-@RunWith(mByHaveRunner.class)
 public class mByHave {
 
-    private final Collection<StepCandidate> givenCandidates = new ArrayList<StepCandidate>();
-    private final Collection<StepCandidate> whenCandidates = new ArrayList<StepCandidate>();
-    private final Collection<StepCandidate> thenCandidates = new ArrayList<StepCandidate>();
-
-
-
-    public String[] getParameters(final Method method) {
-        System.out.println("Paranamer");
-        final Paranamer paranamer = new CachingParanamer(new BytecodeReadingParanamer());
-        final String[] params = paranamer.lookupParameterNames(method, false);
-        return params;
-    }
-
-    public Map<Integer, MethodParameter> findParameterPositions(final String[] params, final String stepValue) {
-
-        final Map<Integer, MethodParameter> result = new TreeMap<Integer, MethodParameter>();
-        if (params != null) {
-            for (int i = 0; i < params.length; i++) {
-                final String param = params[i];
-                System.out.println("param: " + param);
-                final String paramPlaceHolder = "{" + param + "}";
-                final int position = stepValue.indexOf(paramPlaceHolder);
-                System.out.println("Position: " + position);
-                if (position < 0) {
-//                    continue;
-                    throw new IllegalArgumentException(); //TODO other exception
-                }
-                if (stepValue.indexOf(paramPlaceHolder, position + param.length()) >= 0) {
-                    throw new IllegalArgumentException(); //TODO Too many parameters.
-                }
-                result.put(Integer.valueOf(position), new MethodParameter(param, i));
-            }
-        }
-        return result;
-    }
-
-    public String createRegEx(final String stepValue, final Collection<String> params) {
-        String regEx = stepValue;
-        for (final String param : params) {
-            final String paramPlaceHolder = "{" + param + "}";
-            regEx = regEx.replace(paramPlaceHolder, "(.*)");
-        }
-        return regEx;
-    }
-
     private final Object testObject;
+    private final mByHaveRunner runner;
 
-    public <T> mByHave(final T testObject) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    public mByHave(final Object testObject) throws InitializationError {
+        this(testObject, testObject.getClass());
+    }
+
+    public mByHave(final Object testObject, final Class<?> stepClass) throws InitializationError {
         this.testObject = testObject;
-
-        final Class<?> testClass = testObject.getClass();
-
-        for (final Method method : testClass.getDeclaredMethods()) {
-            if (method.isAnnotationPresent(Given.class)) {
-                final Given given = method.getAnnotation(Given.class);
-                System.out.println("Given: " + given.value());
-
-                final String[] params = getParameters(method);
-                final Map<Integer, MethodParameter> parameterPositions = findParameterPositions(params, given.value());
-
-
-                for(final Map.Entry<Integer, MethodParameter> paramPos : parameterPositions.entrySet()) {
-                    System.out.println("Position: " + paramPos.getKey() + " Param: " + paramPos.getValue().getParamName());
-                }
-                final String regEx = createRegEx(given.value(), Arrays.asList(params));
-
-                System.out.println("RegEx: " + regEx);
-
-                givenCandidates.add(new StepCandidate(given.value(), given.priority(), method, parameterPositions, regEx));
-
-            }
-        }
+        this.runner     = new mByHaveRunner(stepClass);
     }
 
-    private void runCandidate(final StepCandidate candidate, final Matcher matcher) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        final Map<Integer, MethodParameter> positions = candidate.getParameterPositions();
-        int i = 1;
-
-        final SortedMap<Integer, String> methodParameters = new TreeMap<Integer, String>();
-        for (final MethodParameter param : positions.values()) {
-            final String paramValue = matcher.group(i++);
-            methodParameters.put(param.getParamPos(), paramValue);
-            System.out.println("Parameter name: " + param.getParamName() + " Value: " + paramValue);
-        }
-
-        System.out.println("Params: " + candidate.getMethod().getParameterTypes().length);
-
-        candidate.getMethod().invoke(testObject, methodParameters.values().toArray());
-
-    }
-
-    private void runStep(final String step, final Collection<StepCandidate> stepCandidates) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        boolean found = false;
-        for (final StepCandidate candidate : stepCandidates) {
-            final Matcher matcher = candidate.getPattern().matcher(step);
-            if (matcher.find()) {
-                found = true;
-                System.out.println("FOUND! " + candidate.getValue());
-                runCandidate(candidate, matcher);
-                break;
-            }
-        }
-        if (!found) {
-            throw new IllegalArgumentException("No maching step");
-        }
-
-    }
 
     public mByHave given(final String given) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runStep(given, givenCandidates);
+        runner.given(testObject, given);
         return this;
     }
 
     public mByHave when(final String when) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runStep(when, whenCandidates);
+        runner.when(testObject, when);
         return this;
     }
 
     public mByHave then(final String then) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runStep(then, thenCandidates);
+        runner.then(testObject, then);
         return this;
     }
 
-    public void run() {
-
+    public void runScenario(final String scenario) {
+        runner.runScenario(testObject, scenario);
     }
+
 }

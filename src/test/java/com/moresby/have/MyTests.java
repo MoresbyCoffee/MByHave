@@ -31,11 +31,10 @@
 package com.moresby.have;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.model.InitializationError;
 
 import com.moresby.have.annotations.Given;
 
@@ -59,31 +58,16 @@ public class MyTests {
     }
 
     @Test
-    public void test() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    @Ignore
+    public void test() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
         new mByHave(this).given("second text blah blah").given("given text blah blah blah blah");
 
     }
 
     @Test
-    @Ignore
-    public void regExpTest() {
-
-        final String regex = "blah (\\w*) blah";
-        final String input = "blah blah2 blah";
-
-        final Pattern pattern = Pattern.compile(regex);
-        final Matcher matcher = pattern.matcher(input);
-
-        while(matcher.find()) {
-            System.out.println("Find: " + matcher.start() + " - " + matcher.end() + " cont: " + matcher.group() + " " + matcher.groupCount());
-            for (int i = 0; i <= matcher.groupCount(); i++) {
-                System.out.println("Group: " + matcher.group(i));
-            }
-        }
-
-
-
-
+    public void testScenario() throws InitializationError {
+        new mByHave(this).runScenario("Given second text blah blah\n" +
+        		                       "Given given text blah blah blah blah");
     }
 }
 
