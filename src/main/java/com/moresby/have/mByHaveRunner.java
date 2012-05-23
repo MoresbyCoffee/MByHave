@@ -30,19 +30,24 @@
  */
 package com.moresby.have;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
@@ -68,10 +73,22 @@ import com.moresby.have.annotations.When;
  */
 public class mByHaveRunner extends BlockJUnit4ClassRunner {
 
+    private final Map<Class<? extends Annotation>, StepKeyword>         keywords;
+    private final Map<Class<? extends Annotation>, List<StepCandidate>> candidates;
+    {
+        final Map<Class<? extends Annotation>, StepKeyword> mutableKeywords = new HashMap<Class<? extends Annotation>, StepKeyword>();
+        mutableKeywords.put(Given.class, new StepKeyword(Given.class, "Given"));
+        mutableKeywords.put(When.class,  new StepKeyword(When.class,  "When" ));
+        mutableKeywords.put(Then.class,  new StepKeyword(Then.class,  "Then" ));
+        keywords = Collections.unmodifiableMap(mutableKeywords);
 
-    private final List<StepCandidate> givenCandidates = new ArrayList<StepCandidate>();
-    private final List<StepCandidate> whenCandidates  = new ArrayList<StepCandidate>();
-    private final List<StepCandidate> thenCandidates  = new ArrayList<StepCandidate>();
+        final Map<Class<? extends Annotation>, List<StepCandidate>> mutableCandidates = new HashMap<Class<? extends Annotation>, List<StepCandidate>>();
+        for (final Class<? extends Annotation> annotation : keywords.keySet()) {
+            mutableCandidates.put(annotation, new ArrayList<StepCandidate>());
+        }
+
+        candidates = Collections.unmodifiableMap(mutableCandidates);
+    }
 
     /**
      * @param testClass
@@ -79,10 +96,13 @@ public class mByHaveRunner extends BlockJUnit4ClassRunner {
      */
     public mByHaveRunner(final Class<?> testClass) throws InitializationError {
         super(testClass);
-        initStepCandidates(Given.class, testClass, givenCandidates);
-        initStepCandidates(When.class,  testClass, whenCandidates );
-        initStepCandidates(Then.class,  testClass, thenCandidates );
+        initStepCandidates(testClass);
+    }
 
+    private void initStepCandidates(final Class<?> testClass) {
+        for (final Map.Entry<Class<? extends Annotation>, List<StepCandidate>> candidate : candidates.entrySet()) {
+            initStepCandidates(candidate.getKey(), testClass, candidate.getValue());
+        }
     }
 
     private static <T extends Annotation> String getAnnotationValue(final Class<T> annotation, final Method method) {
@@ -218,39 +238,69 @@ public class mByHaveRunner extends BlockJUnit4ClassRunner {
     }
 
     public void given(final Object testObject, final String given) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runStep(testObject, given, givenCandidates);
+        runStep(testObject, given, candidates.get(Given.class));
     }
 
     public void when(final Object testObject, final String when) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runStep(testObject, when, whenCandidates);
+        runStep(testObject, when, candidates.get(When.class));
     }
 
     public void then(final Object testObject, final String then) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runStep(testObject, then, thenCandidates);
+        runStep(testObject, then, candidates.get(Then.class));
     }
 
-    public void runScenario(final Object testObject, final String scenario) {
-        final String regEx = "^(Given|When|Then)\\s(.*)";
-        final Matcher matcher = Pattern.compile(regEx).matcher(scenario);
-        while (matcher.find()) {
-            for (int i = 1; i <= matcher.groupCount(); i++) {
-                System.out.println("Group: " + matcher.group(i));
+    public void runScenario(final Object testObject, final String scenario) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+
+        try {
+            final byte[] bytes = scenario.getBytes("UTF-8");
+            final ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+            try {
+                runScenario(testObject, inputStream);
+            } finally {
+                inputStream.close();
+            }
+        } catch (final IOException e) {
+            //TODO should not happen.
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public void runScenario(final Object testObject, final InputStream scenario) throws IOException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        final InputStreamReader isReader = new InputStreamReader(scenario);
+        final BufferedReader    reader   = new BufferedReader(isReader);
+
+        String line = null;
+        StringBuilder stepBuilder = null;
+        while((line = reader.readLine()) != null) {
+            if (line.startsWith("#")) {
+                continue;
+            }
+            if (line.startsWith("Given") || line.startsWith("When") || line.startsWith("Then")) {
+                if (stepBuilder != null) {
+                    processStep(testObject, stepBuilder.toString());
+                }
+                stepBuilder = new StringBuilder(line);
+            } else {
+                stepBuilder.append(line);
             }
         }
-
-    }
-
-    public void runScenario(final Object testObject, final InputStream scenario) {
-        runScenario(testObject, convertStreamToString(scenario));
-    }
-
-    private String convertStreamToString(final InputStream is) {
-        try {
-            return new java.util.Scanner(is).useDelimiter("\\A").next();
-        } catch (final java.util.NoSuchElementException e) {
-            return "";
+        if (stepBuilder != null) {
+            processStep(testObject, stepBuilder.toString());
         }
     }
 
+    public void processStep(final Object testObject, final String step) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        System.out.println("Process step: " + step);
+        //TODO get rid of the keyword!
+        for (final StepKeyword keyword : keywords.values()) {
+            if (step.startsWith(keyword.getKeyword())) {
+                runStep(testObject, step, candidates.get(Given.class));
+                return;
+            }
+        }
+        throw new IllegalArgumentException(); //TODO
+
+    }
 
 }

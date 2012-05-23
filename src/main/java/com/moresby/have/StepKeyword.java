@@ -30,9 +30,7 @@
  */
 package com.moresby.have;
 
-import java.lang.reflect.InvocationTargetException;
-
-import org.junit.runners.model.InitializationError;
+import java.lang.annotation.Annotation;
 
 /**
  * TODO javadoc.
@@ -40,38 +38,26 @@ import org.junit.runners.model.InitializationError;
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class mByHave {
+public class StepKeyword {
 
-    private final Object testObject;
-    private final mByHaveRunner runner;
+    private final Class<? extends Annotation> annotation;
+    private final String                       keyword;
 
-    public mByHave(final Object testObject) throws InitializationError {
-        this(testObject, testObject.getClass());
+    /**
+     * @param annotation
+     * @param keyword
+     */
+    public StepKeyword(final Class<? extends Annotation> annotation, final String keyword) {
+        super();
+        this.annotation = annotation;
+        this.keyword = keyword;
     }
 
-    public mByHave(final Object testObject, final Class<?> stepClass) throws InitializationError {
-        this.testObject = testObject;
-        this.runner     = new mByHaveRunner(stepClass);
+    public Class<? extends Annotation> getAnnotation() {
+        return annotation;
     }
-
-
-    public mByHave given(final String given) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runner.given(testObject, given);
-        return this;
-    }
-
-    public mByHave when(final String when) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runner.when(testObject, when);
-        return this;
-    }
-
-    public mByHave then(final String then) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runner.then(testObject, then);
-        return this;
-    }
-
-    public void runScenario(final String scenario) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runner.runScenario(testObject, scenario);
+    public String getKeyword() {
+        return keyword;
     }
 
 }

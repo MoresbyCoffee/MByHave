@@ -32,7 +32,6 @@ package com.moresby.have;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
 
@@ -55,19 +54,20 @@ public class MyTests {
     @Given("second text {firstParam} {secondParam}")
     public void secondGivenMethod(final String firstParam, final String secondParam) {
         System.out.println("secondGivenMethod");
+        System.out.println("FirstPAram: " + firstParam);
+        System.out.println("SecondParam:" + secondParam);
     }
 
     @Test
-    @Ignore
     public void test() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
-        new mByHave(this).given("second text blah blah").given("given text blah blah blah blah");
+        new mByHave(this).given("second text blah \nblah  test").given("given text blah blah blah blah");
 
     }
 
     @Test
-    public void testScenario() throws InitializationError {
+    public void testScenario() throws InitializationError, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         new mByHave(this).runScenario("Given second text blah blah\n" +
-        		                       "Given given text blah blah blah blah");
+        		                       "Given given text blah blah1 \ndsfas blah blah");
     }
 }
 

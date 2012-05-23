@@ -47,6 +47,4 @@ public @interface When {
 
     String value();
 
-    int priority() default 0;
-
 }
