@@ -30,9 +30,12 @@
  */
 package com.moresby.have;
 
-import java.lang.reflect.InvocationTargetException;
+import static org.junit.Assert.*;
 
-import org.junit.runners.model.InitializationError;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import com.moresby.have.annotations.Story;
 
 /**
  * TODO javadoc.
@@ -40,38 +43,13 @@ import org.junit.runners.model.InitializationError;
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class mByHave {
+@RunWith(mByHaveRunner.class)
+@Story(files = "storytest1.story")
+public class Story1Test {
 
-    private final Object testObject;
-    private final mByHaveRunner runner;
-
-    public mByHave(final Object testObject) throws InitializationError, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        this(testObject, testObject.getClass());
-    }
-
-    public mByHave(final Object testObject, final Class<?> stepClass) throws InitializationError, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        this.testObject = testObject;
-        this.runner     = new mByHaveRunner(stepClass);
-    }
-
-
-    public mByHave given(final String given) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runner.given(testObject, given);
-        return this;
-    }
-
-    public mByHave when(final String when) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runner.when(testObject, when);
-        return this;
-    }
-
-    public mByHave then(final String then) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runner.then(testObject, then);
-        return this;
-    }
-
-    public void runScenario(final String scenario) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runner.runScenario(testObject, scenario);
+    @Test
+    public void test() {
+        fail("Test this fail");
     }
 
 }

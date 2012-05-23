@@ -28,50 +28,35 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.have;
+package com.moresby.have.exceptions;
 
-import java.lang.reflect.InvocationTargetException;
-
-import org.junit.runners.model.InitializationError;
+import junit.framework.AssertionFailedError;
 
 /**
- * TODO javadoc.
+ * Extension of {@link AssertionFailedError} from JUnit API.
+ * Signals the match errors in mBy.Have.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class mByHave {
+public class mByHaveAssertionError extends AssertionFailedError {
 
-    private final Object testObject;
-    private final mByHaveRunner runner;
+    /** @see java.io.Serializable */
+    private static final long serialVersionUID = 1L;
 
-    public mByHave(final Object testObject) throws InitializationError, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        this(testObject, testObject.getClass());
+    /**
+     *
+     */
+    public mByHaveAssertionError() {
+        super();
     }
 
-    public mByHave(final Object testObject, final Class<?> stepClass) throws InitializationError, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        this.testObject = testObject;
-        this.runner     = new mByHaveRunner(stepClass);
+    /**
+     * @param message
+     */
+    public mByHaveAssertionError(final String message) {
+        super(message);
     }
 
-
-    public mByHave given(final String given) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runner.given(testObject, given);
-        return this;
-    }
-
-    public mByHave when(final String when) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runner.when(testObject, when);
-        return this;
-    }
-
-    public mByHave then(final String then) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runner.then(testObject, then);
-        return this;
-    }
-
-    public void runScenario(final String scenario) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runner.runScenario(testObject, scenario);
-    }
 
 }

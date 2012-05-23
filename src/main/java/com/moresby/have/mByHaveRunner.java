@@ -50,6 +50,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 
 import org.junit.runner.Description;
+import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
@@ -60,8 +61,11 @@ import com.thoughtworks.paranamer.Paranamer;
 
 import com.moresby.have.StepCandidate.MethodParameter;
 import com.moresby.have.annotations.Given;
+import com.moresby.have.annotations.Story;
 import com.moresby.have.annotations.Then;
 import com.moresby.have.annotations.When;
+import com.moresby.have.domain.Scenario;
+import com.moresby.have.exceptions.mByHaveAssertionError;
 
 /**
  * TODO javadoc.
@@ -71,7 +75,7 @@ import com.moresby.have.annotations.When;
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class mByHaveRunner extends BlockJUnit4ClassRunner {
+public class mByHaveRunner extends Runner {
 
     private final Map<Class<? extends Annotation>, StepKeyword>         keywords;
     private final Map<Class<? extends Annotation>, List<StepCandidate>> candidates;
@@ -90,13 +94,159 @@ public class mByHaveRunner extends BlockJUnit4ClassRunner {
         candidates = Collections.unmodifiableMap(mutableCandidates);
     }
 
+    private final List<com.moresby.have.domain.Story> stories;
+    private final Runner parentRunner;
+    private final Class<?> testClass;
     /**
      * @param testClass
      * @throws InitializationError
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
      */
-    public mByHaveRunner(final Class<?> testClass) throws InitializationError {
-        super(testClass);
+    public mByHaveRunner(final Class<?> testClass) throws InitializationError, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        Runner runner;
+        try {
+            runner = new BlockJUnit4ClassRunner(testClass);
+        } catch (final InitializationError e) {
+            runner = null;
+        }
+        this.parentRunner = runner;
+        this.testClass = testClass;
+
         initStepCandidates(testClass);
+
+        try {
+            final List<com.moresby.have.domain.Story> mutableStories = new ArrayList<com.moresby.have.domain.Story>();
+            if (testClass.isAnnotationPresent(Story.class)) {
+                final Story story = testClass.getAnnotation(Story.class);
+                final String[] storyFiles = story.files();
+
+                for (final String storyFile : storyFiles) {
+                    System.out.println("Found storyFile: " + storyFile + " " + testClass.getPackage().getName());
+                    InputStream storyIs = testClass.getClassLoader().getResourceAsStream("com/moresby/have/" + storyFile);
+                    if (storyIs == null) {
+                        storyIs = ClassLoader.getSystemResourceAsStream(storyFile);
+                    }
+                    if (storyIs == null) {
+                        throw new NullPointerException();
+                    }
+                    final com.moresby.have.domain.Story storyObject = parseStory(storyIs);
+                    mutableStories.add(storyObject);
+                }
+            }
+            stories = Collections.unmodifiableList(mutableStories);
+
+            if (parentRunner == null && stories.isEmpty()) {
+                throw new InitializationError("No runnable test in this class.");
+            }
+        } catch (final IOException e) {
+            throw new InitializationError(e); //TODO
+        }
+
+
+
+    }
+
+    /**
+     * @param storyIs
+     * @return
+     * @throws IOException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
+     */
+    private com.moresby.have.domain.Story parseStory(final InputStream storyIs) throws IOException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        final InputStreamReader isReader = new InputStreamReader(storyIs);
+        final BufferedReader    reader   = new BufferedReader(isReader);
+
+        final List<Scenario> scenarios = new ArrayList<Scenario>();
+
+        String line = null;
+        StringBuilder storyBuilder = null;
+        while((line = reader.readLine()) != null) {
+            if (line.startsWith("#")) {
+                continue;
+            }
+            if (line.startsWith("Scenario")) {
+                if (storyBuilder != null) {
+                    scenarios.add(parseScenario(storyBuilder.toString()));
+                }
+                storyBuilder = new StringBuilder();
+            } else if (storyBuilder == null && (line.startsWith("Given") || line.startsWith("When") || line.startsWith("Then"))) {
+                storyBuilder = new StringBuilder();
+            }
+            if (storyBuilder != null) {
+                storyBuilder.append(line).append("\n");
+            }
+        }
+        if (storyBuilder != null) {
+            scenarios.add(parseScenario(storyBuilder.toString()));
+        }
+        return new com.moresby.have.domain.Story("Story name", scenarios);
+    }
+
+    public Scenario parseScenario(final String scenario) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+
+        try {
+            final byte[] bytes = scenario.getBytes("UTF-8");
+            final ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+            try {
+                return parseScenario(inputStream);
+            } finally {
+                inputStream.close();
+            }
+        } catch (final IOException e) {
+            //TODO should not happen.
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public Scenario parseScenario(final InputStream scenario) throws IOException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        final InputStreamReader isReader = new InputStreamReader(scenario);
+        final BufferedReader    reader   = new BufferedReader(isReader);
+
+        String scenarioDescription = null;
+        final List<String> steps = new ArrayList<String>();
+
+        String line = null;
+        StringBuilder scenarioBuilder = null;
+        boolean parseDescription = false;
+        while((line = reader.readLine()) != null) {
+            if (line.startsWith("#")) {
+                continue;
+            }
+            if (line.startsWith("Scenario")) {
+                if (scenarioBuilder == null ) {
+                    scenarioBuilder = new StringBuilder(line);
+                    parseDescription = true;
+                } else {
+                    throw new IllegalArgumentException("This scenario contains two scenario descriptions.");
+                }
+            } else if (line.startsWith("Given") || line.startsWith("When") || line.startsWith("Then")) {
+                if (parseDescription) {
+                    scenarioDescription = scenarioBuilder.toString();
+                    scenarioBuilder = new StringBuilder(line);
+                    parseDescription = false;
+                } else if (scenarioBuilder != null) {
+                    steps.add(scenarioBuilder.toString());
+                    scenarioBuilder = new StringBuilder(line);
+                } else {
+                    scenarioDescription = "TODO";
+                    scenarioBuilder = new StringBuilder(line);
+                }
+            } else if (scenarioBuilder != null) {
+                scenarioBuilder.append(line + "\n");
+            }
+        }
+        if (scenarioBuilder != null) {
+            if (parseDescription) {
+                throw new IllegalArgumentException("The scenario description does not contain any step description");
+            }
+            steps.add(scenarioBuilder.toString());
+        }
+        return new Scenario(scenarioDescription, steps);
     }
 
     private void initStepCandidates(final Class<?> testClass) {
@@ -152,14 +302,33 @@ public class mByHaveRunner extends BlockJUnit4ClassRunner {
     /** {@inheritDoc} */
     @Override
     public Description getDescription() {
-        final Description description = super.getDescription();
-        return description;
+
+        final Description mByHaveSuite = Description.createSuiteDescription("Story file tests");
+        for (final com.moresby.have.domain.Story story : stories) {
+            final Description storyDescription = Description.createTestDescription(testClass, story.getName());
+            for (final Scenario scenario : story.getScenario()) {
+                storyDescription.addChild(Description.createTestDescription(testClass, scenario.getDescription()));
+            }
+            mByHaveSuite.addChild(storyDescription);
+        }
+
+        if (parentRunner == null) {
+            return mByHaveSuite;
+        } else {
+            final Description parentDescription = parentRunner.getDescription();
+            parentDescription.addChild(mByHaveSuite);
+            return parentDescription;
+        }
     }
 
     /** {@inheritDoc} */
     @Override
     public void run(final RunNotifier notifier) {
-        super.run(notifier);
+        if (parentRunner != null) {
+            parentRunner.run(notifier);
+        }
+
+
     }
 
 
@@ -232,7 +401,7 @@ public class mByHaveRunner extends BlockJUnit4ClassRunner {
             }
         }
         if (!found) {
-            throw new IllegalArgumentException("No maching step");
+            throw new mByHaveAssertionError("No maching step to the \"" + step + "\" step definition.");
         }
 
     }
@@ -266,27 +435,16 @@ public class mByHaveRunner extends BlockJUnit4ClassRunner {
 
     }
 
-    public void runScenario(final Object testObject, final InputStream scenario) throws IOException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        final InputStreamReader isReader = new InputStreamReader(scenario);
-        final BufferedReader    reader   = new BufferedReader(isReader);
 
-        String line = null;
-        StringBuilder stepBuilder = null;
-        while((line = reader.readLine()) != null) {
-            if (line.startsWith("#")) {
-                continue;
-            }
-            if (line.startsWith("Given") || line.startsWith("When") || line.startsWith("Then")) {
-                if (stepBuilder != null) {
-                    processStep(testObject, stepBuilder.toString());
-                }
-                stepBuilder = new StringBuilder(line);
-            } else {
-                stepBuilder.append(line);
-            }
-        }
-        if (stepBuilder != null) {
-            processStep(testObject, stepBuilder.toString());
+    public void runScenario(final Object testObject, final InputStream scenarioIs) throws IOException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        final Scenario scenario = parseScenario(scenarioIs);
+        processScenario(testObject, scenario);
+    }
+
+    private void processScenario(final Object testObject, final Scenario scenario) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        System.out.println("Description: " + scenario.getDescription());
+        for (final String step : scenario.getSteps()) {
+            processStep(testObject, step);
         }
     }
 
@@ -295,7 +453,7 @@ public class mByHaveRunner extends BlockJUnit4ClassRunner {
         //TODO get rid of the keyword!
         for (final StepKeyword keyword : keywords.values()) {
             if (step.startsWith(keyword.getKeyword())) {
-                runStep(testObject, step, candidates.get(Given.class));
+                runStep(testObject, step, candidates.get(keyword.getAnnotation()));
                 return;
             }
         }

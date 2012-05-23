@@ -28,11 +28,12 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.have;
+package com.moresby.have.annotations;
 
-import java.lang.reflect.InvocationTargetException;
-
-import org.junit.runners.model.InitializationError;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * TODO javadoc.
@@ -40,38 +41,9 @@ import org.junit.runners.model.InitializationError;
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class mByHave {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface Story {
 
-    private final Object testObject;
-    private final mByHaveRunner runner;
-
-    public mByHave(final Object testObject) throws InitializationError, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        this(testObject, testObject.getClass());
-    }
-
-    public mByHave(final Object testObject, final Class<?> stepClass) throws InitializationError, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        this.testObject = testObject;
-        this.runner     = new mByHaveRunner(stepClass);
-    }
-
-
-    public mByHave given(final String given) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runner.given(testObject, given);
-        return this;
-    }
-
-    public mByHave when(final String when) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runner.when(testObject, when);
-        return this;
-    }
-
-    public mByHave then(final String then) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runner.then(testObject, then);
-        return this;
-    }
-
-    public void runScenario(final String scenario) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        runner.runScenario(testObject, scenario);
-    }
-
+    String[] files();
 }

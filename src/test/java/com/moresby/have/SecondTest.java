@@ -31,6 +31,9 @@
 package com.moresby.have;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import com.moresby.have.annotations.Story;
 
 /**
  * TODO javadoc.
@@ -38,6 +41,8 @@ import org.junit.Test;
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
+@RunWith(mByHaveRunner.class)
+@Story(files = "second_test.story")
 public class SecondTest {
 
     @Test
