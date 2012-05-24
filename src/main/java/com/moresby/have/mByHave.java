@@ -30,9 +30,9 @@
  */
 package com.moresby.have;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.junit.runners.model.InitializationError;
+
+import com.moresby.have.exceptions.mByHaveException;
 
 /**
  * TODO javadoc.
@@ -42,35 +42,39 @@ import org.junit.runners.model.InitializationError;
  */
 public class mByHave {
 
-    private final Object testObject;
+    private final Object        testObject;
     private final mByHaveRunner runner;
 
-    public mByHave(final Object testObject) throws InitializationError, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    public mByHave(final Object testObject) throws mByHaveException {
         this(testObject, testObject.getClass());
     }
 
-    public mByHave(final Object testObject, final Class<?> stepClass) throws InitializationError, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    public mByHave(final Object testObject, final Class<?> stepClass) throws mByHaveException {
         this.testObject = testObject;
-        this.runner     = new mByHaveRunner(stepClass, false);
+        try {
+            this.runner     = new mByHaveRunner(stepClass, false);
+        } catch (final InitializationError e) {
+            throw new mByHaveException("The mByHave initailization did not succeed", e);
+        }
     }
 
 
-    public mByHave given(final String given) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    public mByHave given(final String given) throws mByHaveException {
         runner.given(testObject, given);
         return this;
     }
 
-    public mByHave when(final String when) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    public mByHave when(final String when) throws mByHaveException {
         runner.when(testObject, when);
         return this;
     }
 
-    public mByHave then(final String then) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    public mByHave then(final String then) throws mByHaveException {
         runner.then(testObject, then);
         return this;
     }
 
-    public void runScenario(final String scenario) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    public void runScenario(final String scenario) throws mByHaveException {
         runner.runScenario(testObject, scenario);
     }
 

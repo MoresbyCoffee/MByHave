@@ -30,10 +30,8 @@
  */
 package com.moresby.have;
 
-import java.lang.reflect.InvocationTargetException;
-
+import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runners.model.InitializationError;
 
 import com.moresby.have.annotations.Given;
 
@@ -59,15 +57,22 @@ public class MyTests {
     }
 
     @Test
-    public void test() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
+    @Ignore
+    public void test() {
         new mByHave(this).given("second text blah \nblah  test").given("given text blah blah blah blah");
 
     }
 
     @Test
-    public void testScenario() throws InitializationError, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    @Ignore
+    public void testScenario() {
         new mByHave(this).runScenario("Given second text blah blah\n" +
         		                       "Given given text blah blah1 \ndsfas blah blah");
+    }
+
+    @Test
+    public void testStackStrace() {
+
     }
 }
 

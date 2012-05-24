@@ -32,10 +32,7 @@ package com.moresby.have;
 
 import static org.junit.Assert.*;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.junit.Test;
-import org.junit.runners.model.InitializationError;
 
 import com.moresby.have.annotations.Given;
 import com.moresby.have.annotations.Then;
@@ -77,13 +74,13 @@ public class RunScenarioTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void runNull() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
+    public void runNull() {
 
         new mByHave(this).runScenario(null);
     }
 
     @Test
-    public void runGiven() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
+    public void runGiven() {
         new mByHave(this).runScenario("Given first method");
         assertTrue(first);
         assertFalse(second);
@@ -91,7 +88,7 @@ public class RunScenarioTest {
     }
 
     @Test(expected = AssertionError.class)
-    public void runUnknownGiven() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
+    public void runUnknownGiven() {
         try {
             new mByHave(this).runScenario("Given unknown given pattern");
         } catch (final AssertionError e) {
@@ -102,7 +99,7 @@ public class RunScenarioTest {
     }
 
     @Test
-    public void runWithScenarioDescription() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
+    public void runWithScenarioDescription() {
         new mByHave(this).runScenario("Scenario Scenario description \n" +
         		                       "Given first method");
         assertTrue(first);
@@ -111,7 +108,7 @@ public class RunScenarioTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void runWithTwoScenarioDescription1() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
+    public void runWithTwoScenarioDescription1() {
         new mByHave(this).runScenario("Scenario Scenario description \n" +
                                        "Scenario Second description \n" +
                                        "Given first method");
@@ -121,7 +118,7 @@ public class RunScenarioTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void runWithTwoScenarioDescription2() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
+    public void runWithTwoScenarioDescription2() {
         new mByHave(this).runScenario("Scenario Scenario description \n" +
                                        "Given first method\n" +
                                        "Scenario Second description");
@@ -131,7 +128,7 @@ public class RunScenarioTest {
     }
 
     @Test
-    public void runWhen() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
+    public void runWhen() {
         new mByHave(this).runScenario("When second method parameter123");
         assertFalse(first);
         assertTrue(second);
@@ -141,7 +138,7 @@ public class RunScenarioTest {
 
 
     @Test(expected = AssertionError.class)
-    public void runUnknownWhen() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
+    public void runUnknownWhen() {
         try {
             new mByHave(this).runScenario("When unknown given pattern");
         } catch (final AssertionError e) {
@@ -152,7 +149,7 @@ public class RunScenarioTest {
     }
 
     @Test
-    public void runGivenWhen() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
+    public void runGivenWhen() {
         new mByHave(this).runScenario("Given first method\n" +
                                        "When second method parameter 123");
         assertTrue(first);
@@ -162,7 +159,7 @@ public class RunScenarioTest {
     }
 
     @Test
-    public void runGivenWhenTwice() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
+    public void runGivenWhenTwice() {
         new mByHave(this).runScenario("Given first method\n" +
                                        "When second method parameter 123\n" +
                                        "When second method second method");
@@ -173,7 +170,7 @@ public class RunScenarioTest {
     }
 
     @Test
-    public void runThen() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
+    public void runThen() {
         new mByHave(this).runScenario("Then third firstparam secondparam method");
         assertFalse(first);
         assertFalse(second);
@@ -183,7 +180,7 @@ public class RunScenarioTest {
     }
 
     @Test(expected = AssertionError.class)
-    public void runUnknownThen() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
+    public void runUnknownThen() {
         try {
             new mByHave(this).runScenario("Then unknown given pattern");
         } catch (final AssertionError e) {
@@ -194,7 +191,7 @@ public class RunScenarioTest {
     }
 
     @Test
-    public void runGivenThen() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
+    public void runGivenThen() {
         new mByHave(this).runScenario("Given first method\n" +
                                        "Then third parameter 123 second method");
         assertTrue(first);
@@ -206,7 +203,7 @@ public class RunScenarioTest {
     }
 
     @Test
-    public void runGivenWhenThen() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
+    public void runGivenWhenThen() {
         new mByHave(this).runScenario("Given first method\n" +
                                        "When second method when parameter\n" +
                                        "Then third parameter 123 second method");

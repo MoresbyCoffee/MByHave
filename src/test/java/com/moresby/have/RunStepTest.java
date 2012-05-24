@@ -45,16 +45,48 @@ import com.moresby.have.annotations.Given;
 public class RunStepTest {
 
     private boolean noParamGiven = false;
+    private boolean oneParamGiven = false;
+    private String  oneParamParam = null;
 
     @Given(" a no param given method")
     public void noParamGiven() {
         this.noParamGiven = true;
     }
 
+    @Given("one parameter {parameter}")
+    public void oneParamGiven(final String parameter) {
+        this.oneParamGiven = true;
+        this.oneParamParam = parameter;
+    }
+
+    @Given("test fail")
+    public void testFail() {
+        fail("This is a test. It have had to happen.");
+    }
+
     @Test
-    public void runGiven() throws Exception {
+    public void runGiven() {
         new mByHave(this).given(" a no param given method");
         assertTrue(noParamGiven);
+    }
+
+    @Test
+    public void runGivenOneParameter() {
+        new mByHave(this).given("one parameter test parameter text");
+        assertTrue(oneParamGiven);
+        assertEquals("test parameter text", oneParamParam);
+    }
+
+    @Test
+    public void runGivenOneParameterLineBreak() {
+        new mByHave(this).given("one parameter test parameter\n text");
+        assertTrue(oneParamGiven);
+        assertEquals("test parameter\n text", oneParamParam);
+    }
+
+    @Test
+    public void testFailTest() {
+        new mByHave(this).given("test fail");
     }
 
 }

@@ -28,14 +28,7 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.have.annotations;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import org.junit.runner.Runner;
+package com.moresby.have.exceptions;
 
 /**
  * TODO javadoc.
@@ -43,10 +36,36 @@ import org.junit.runner.Runner;
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface mByHaveRunWith {
+public class mByHaveException extends RuntimeException {
 
-    Class<? extends Runner> parentRunner();
+    /**
+     *
+     */
+    public mByHaveException() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+    /**
+     * @param arg0
+     * @param arg1
+     */
+    public mByHaveException(final String arg0, final Throwable arg1) {
+        super(arg0, arg1);
+    }
+
+    /**
+     * @param arg0
+     */
+    public mByHaveException(final String arg0) {
+        super(arg0);
+    }
+
+    /**
+     * @param arg0
+     */
+    public mByHaveException(final Throwable arg0) {
+        super(arg0);
+    }
 
 }
