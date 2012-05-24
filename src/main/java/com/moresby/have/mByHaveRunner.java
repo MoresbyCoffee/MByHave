@@ -49,15 +49,13 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 
-import org.junit.internal.runners.InitializationError;
 import org.junit.internal.runners.JUnit4ClassRunner;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
+import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
-
-import com.thoughtworks.paranamer.BytecodeReadingParanamer;
-import com.thoughtworks.paranamer.CachingParanamer;
-import com.thoughtworks.paranamer.Paranamer;
+import org.junit.runners.ParentRunner;
+import org.junit.runners.model.InitializationError;
 
 import com.moresby.have.StepCandidate.MethodParameter;
 import com.moresby.have.annotations.Given;
@@ -66,6 +64,9 @@ import com.moresby.have.annotations.Then;
 import com.moresby.have.annotations.When;
 import com.moresby.have.domain.Scenario;
 import com.moresby.have.exceptions.mByHaveAssertionError;
+import com.thoughtworks.paranamer.BytecodeReadingParanamer;
+import com.thoughtworks.paranamer.CachingParanamer;
+import com.thoughtworks.paranamer.Paranamer;
 
 /**
  * TODO javadoc.
@@ -75,7 +76,7 @@ import com.moresby.have.exceptions.mByHaveAssertionError;
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class mByHaveRunner extends Runner {
+public class mByHaveRunner extends ParentRunner<Scenario> {
 
     private final Map<Class<? extends Annotation>, StepKeyword>         keywords;
     private final Map<Class<? extends Annotation>, List<StepCandidate>> candidates;
@@ -101,6 +102,7 @@ public class mByHaveRunner extends Runner {
 //> CONSTRUCTORS
 
     public mByHaveRunner(final Class<?> testClass, final boolean parseFile) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, InitializationError {
+        super(testClass);
         this.testClass = testClass;
         initStepCandidates(testClass);
 
@@ -123,7 +125,7 @@ public class mByHaveRunner extends Runner {
             }
 
         } catch (final IOException e) {
-            throw new InitializationError(e); //TODO
+            throw new InitializationError(Arrays.asList(new Throwable[]{e})); //TODO
         }
 
     }
@@ -439,34 +441,52 @@ public class mByHaveRunner extends Runner {
 
     /** {@inheritDoc} */
     @Override
-    public Description getDescription() {
-
-        final Description mByHaveSuite = Description.createSuiteDescription("Story file tests");
-        for (final com.moresby.have.domain.Story story : stories) {
-            final Description storyDescription = Description.createTestDescription(testClass, story.getName());
-            for (final Scenario scenario : story.getScenario()) {
-                storyDescription.addChild(Description.createTestDescription(testClass, scenario.getDescription()));
-            }
-            mByHaveSuite.addChild(storyDescription);
-        }
-
-        if (parentRunner == null) {
-            return mByHaveSuite;
-        } else {
-            final Description parentDescription = parentRunner.getDescription();
-            parentDescription.addChild(mByHaveSuite);
-            return parentDescription;
-        }
+    protected Description describeChild(Scenario scenario) {
+        return Description.createSuiteDescription(scenario.getDescription());
     }
 
     /** {@inheritDoc} */
     @Override
-    public void run(final RunNotifier notifier) {
-        if (parentRunner != null) {
-            parentRunner.run(notifier);
+    protected List<Scenario> getChildren() {
+        final List<Scenario> scenarios = new ArrayList<Scenario>();
+        for (final com.moresby.have.domain.Story story : stories) {
+            scenarios.addAll(story.getScenario());
+        }
+        return scenarios;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected void runChild(Scenario scenario, RunNotifier notifier) {
+
+        final Description scenarioDescription = Description.createSuiteDescription(scenario.getDescription());
+        Failure failure = null;
+
+        notifier.fireTestStarted(scenarioDescription);
+        Object testObject;
+        try {
+            testObject = testClass.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
+        for (final String step : scenario.getSteps()) {
 
+            try {
+                processStep(testObject, step);
+            } catch (Throwable e) {
+                e.printStackTrace();
+                failure = new Failure(scenarioDescription, e);
+                break;
+            }
+        }
+        if (failure != null) {
+            notifier.fireTestAssumptionFailed(failure);
+        } else {
+            notifier.fireTestFinished(scenarioDescription);
+        }
+        System.out.println("End of scenario: " + scenario.getDescription());
     }
+
 
 }

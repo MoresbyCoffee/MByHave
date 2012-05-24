@@ -35,6 +35,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.moresby.have.annotations.Given;
 import com.moresby.have.annotations.Story;
 
 /**
@@ -50,6 +51,11 @@ public class Story1Test {
     @Test
     public void test() {
         fail("Test this fail");
+    }
+
+    @Given("first method")
+    public void firstMethod() {
+        System.out.println("First out");
     }
 
 }

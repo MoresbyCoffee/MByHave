@@ -32,7 +32,7 @@ package com.moresby.have;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.junit.internal.runners.InitializationError;
+import org.junit.runners.model.InitializationError;
 
 /**
  * TODO javadoc.

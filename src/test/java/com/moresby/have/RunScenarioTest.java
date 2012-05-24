@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
 import java.lang.reflect.InvocationTargetException;
 
 import org.junit.Test;
-import org.junit.internal.runners.InitializationError;
+import org.junit.runners.model.InitializationError;
 
 import com.moresby.have.annotations.Given;
 import com.moresby.have.annotations.Then;
