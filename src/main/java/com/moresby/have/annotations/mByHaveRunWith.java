@@ -28,12 +28,14 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.have;
+package com.moresby.have.annotations;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import com.moresby.have.annotations.Story;
+import org.junit.runner.Runner;
 
 /**
  * TODO javadoc.
@@ -41,13 +43,10 @@ import com.moresby.have.annotations.Story;
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-@RunWith(mByHaveRunner.class)
-@Story(files = "second_test.story")
-public class SecondTest {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface mByHaveRunWith {
 
-    @Test
-    public void test() {
-        System.out.println("-------------------------------------------- TEST");
-    }
+    Class<? extends Runner> parentRunner();
 
 }

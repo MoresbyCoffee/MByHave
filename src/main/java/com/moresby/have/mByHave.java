@@ -32,7 +32,7 @@ package com.moresby.have;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.junit.runners.model.InitializationError;
+import org.junit.internal.runners.InitializationError;
 
 /**
  * TODO javadoc.
@@ -51,7 +51,7 @@ public class mByHave {
 
     public mByHave(final Object testObject, final Class<?> stepClass) throws InitializationError, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         this.testObject = testObject;
-        this.runner     = new mByHaveRunner(stepClass);
+        this.runner     = new mByHaveRunner(stepClass, false);
     }
 
 
