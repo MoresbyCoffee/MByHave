@@ -109,4 +109,64 @@ public class RunStepTest {
         new mByHave(this).given("dgagfdsagsa pattern");
     }
 
+    @Test
+    public void testReqEx2() {
+        new mByHave(this).given("(.*) pattern");
+        assertTrue(regExpGiven);
+    }
+
+    private boolean twoParamGivenMethod = false;
+    private String  twoParamGivenMethodParam1 = null;
+    private String  twoParamGivenMethodParam2 = null;
+
+    private boolean secondTwoParamGivenMethod = false;
+    private String  secondTwoParamGivenMethodParam1 = null;
+    private String  secondTwoParamGivenMethodParam2 = null;
+
+    @Given("given text $firstParam $secondParam blah blah")
+    public void twoParamGivenMethod(final String firstParam, final String secondParam) {
+        this.twoParamGivenMethodParam1 = firstParam;
+        this.twoParamGivenMethodParam2 = secondParam;
+
+        this.twoParamGivenMethod = true;
+
+    }
+
+    @Given("second text $firstParam $secondParam")
+    public void secondTwoParamGivenMethod(final String firstParam, final String secondParam) {
+        this.secondTwoParamGivenMethodParam1 = firstParam;
+        this.secondTwoParamGivenMethodParam2 = secondParam;
+
+        this.secondTwoParamGivenMethod = true;
+    }
+
+    @Test
+    public void testTwoTwoParameterGiven() {
+        new mByHave(this).given("second text blah \nblah  test").given("given text blah blah blah blah");
+
+        assertTrue(secondTwoParamGivenMethod);
+        assertEquals("blah \nblah ", secondTwoParamGivenMethodParam1);
+        assertEquals("test", secondTwoParamGivenMethodParam2);
+
+        assertTrue(twoParamGivenMethod);
+        assertEquals("blah", twoParamGivenMethodParam1);
+        assertEquals("blah", twoParamGivenMethodParam2);
+
+    }
+
+    @Test
+    public void testRunScenario() {
+        new mByHave(this).runScenario("Given second text blah blah\n" +
+                                      "Given given text blah blah1 \ndsfas blah blah");
+
+        assertTrue(secondTwoParamGivenMethod);
+        assertEquals("blah", secondTwoParamGivenMethodParam1);
+        assertEquals("blah", secondTwoParamGivenMethodParam2);
+
+        assertTrue(twoParamGivenMethod);
+        assertEquals("blah blah1", twoParamGivenMethodParam1);
+        assertEquals("dsfas", twoParamGivenMethodParam2);
+    }
+
+
 }

@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -423,10 +424,13 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
     }
 
     private static String createRegEx(final String stepValue, final Collection<String> paramNames) {
-        String regEx = stepValue;
+        String regEx = Pattern.quote(stepValue);
+        System.out.println("StepValue: " + stepValue);
+        System.out.println("Escaped:   " + regEx);
+
         for (final String paramName : paramNames) {
             final String paramPlaceHolder = getPlaceholderPattern(paramName);
-            regEx = regEx.replace(paramPlaceHolder, "(.*)");
+            regEx = regEx.replace(paramPlaceHolder, "\\E(.*)\\Q");
         }
         return regEx;
     }
@@ -439,12 +443,14 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
         for (final MethodParameter param : positions.values()) {
             final int starts = matcher.start(i);
             final int ends   = matcher.end(i);
-//            final String paramValue = matcher.group(i++);
+
             final String paramValue = step.substring(starts, ends);
+
             System.out.println("Param Value: " + paramValue + " Group: " + matcher.group(i));
             i++;
 
             methodParameters.put(Integer.valueOf(param.getParamPos()), paramValue);
+
             System.out.println("Parameter name: " + param.getParamName() + " Value: " + paramValue);
         }
 
@@ -642,7 +648,7 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
 
         int storyIndex = 0;
         storyDescriptions = new ArrayList<StoryDescription>();
-        mainDescription = Description.createSuiteDescription("Story file tests");
+        mainDescription = Description.createSuiteDescription(testClass.getName());
         for (final com.moresby.have.domain.Story story : stories) {
 
             final Description storyDescription = Description.createSuiteDescription(++storyIndex + ". " + story.getName().replace("\n", " "));
