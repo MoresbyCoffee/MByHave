@@ -60,12 +60,12 @@ public class Story1Test {
         System.out.println("First out");
     }
 
-    @When("second method {param}")
+    @When("second method $param")
     public void whenTestMethod(final String param) {
         System.out.println("When test method: " + param);
     }
 
-    @Then("third {param1} {param2} method")
+    @Then("third $param1 $param2 method")
     public void thenTwoParamMethod(final String param1, final String param2) {
         System.out.println("Then test param1: " + param1 + " param2: " + param2);
     }

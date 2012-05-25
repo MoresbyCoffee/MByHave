@@ -60,13 +60,13 @@ public class RunScenarioTest {
         first = true;
     }
 
-    @When("second method {parameter}")
+    @When("second method $parameter")
     public void when(final String parameter) {
         second = true;
         this.parameter = parameter;
     }
 
-    @Then("third {parameter1} {parameter2} method")
+    @Then("third $parameter1 $parameter2 method")
     public void then(final String parameter1, final String parameter2) {
         third = true;
         this.parameter1 = parameter1;

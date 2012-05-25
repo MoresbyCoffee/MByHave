@@ -30,7 +30,6 @@
  */
 package com.moresby.have;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.moresby.have.annotations.Given;
@@ -44,12 +43,12 @@ import com.moresby.have.annotations.Given;
  */
 public class MyTests {
 
-    @Given("given text {firstParam} {secondParam} blah blah")
+    @Given("given text $firstParam $secondParam blah blah")
     public void givenMethod(final String firstParam, final String secondParam) {
         System.out.println("givenMethod");
     }
 
-    @Given("second text {firstParam} {secondParam}")
+    @Given("second text $firstParam $secondParam")
     public void secondGivenMethod(final String firstParam, final String secondParam) {
         System.out.println("secondGivenMethod");
         System.out.println("FirstPAram: " + firstParam);
@@ -57,22 +56,16 @@ public class MyTests {
     }
 
     @Test
-    @Ignore
     public void test() {
         new mByHave(this).given("second text blah \nblah  test").given("given text blah blah blah blah");
 
     }
 
     @Test
-    @Ignore
     public void testScenario() {
         new mByHave(this).runScenario("Given second text blah blah\n" +
-        		                       "Given given text blah blah1 \ndsfas blah blah");
+        		                      "Given given text blah blah1 \ndsfas blah blah");
     }
 
-    @Test
-    public void testStackStrace() {
-
-    }
 }
 

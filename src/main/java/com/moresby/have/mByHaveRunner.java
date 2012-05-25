@@ -159,6 +159,58 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
 
 //> PRIVATE METHODS
 
+    /**
+     * Loads a resource from the jar. The resource can be in the <tt>root</tt> or in the package of the testClass.
+     *
+     * @param storyFile The name of the story file.
+     * @param testClass The testClass.
+     * @return The InputStream of the story file.
+     * @throws mByHaveException If the file is not found.
+     */
+    private static InputStream loadResource(final String storyFile, final Class<?> testClass) throws mByHaveException {
+
+        {
+            final InputStream storyIs = testClass.getClassLoader().getResourceAsStream(storyFile);
+            if (storyIs != null) {
+                return storyIs;
+            }
+        }
+        {
+            final InputStream storyIs = mByHaveRunner.class.getClassLoader().getResourceAsStream(storyFile);
+            if (storyIs != null) {
+                return storyIs;
+            }
+        }
+        {
+            final InputStream storyIs = ClassLoader.getSystemResourceAsStream(storyFile);
+            if (storyIs != null) {
+                return storyIs;
+            }
+        }
+        final String packageName = testClass.getPackage().getName().replace('.', '/');
+        {
+            final InputStream storyIs = testClass.getClassLoader().getResourceAsStream(packageName + "/" + storyFile);
+            if (storyIs != null) {
+                return storyIs;
+            }
+        }
+        {
+            final InputStream storyIs = mByHaveRunner.class.getClassLoader().getResourceAsStream(packageName + "/" + storyFile);
+            if (storyIs != null) {
+                return storyIs;
+            }
+        }
+        {
+            final InputStream storyIs = ClassLoader.getSystemResourceAsStream(packageName + "/" + storyFile);
+            if (storyIs != null) {
+                return storyIs;
+            }
+        }
+
+        throw new mByHaveException("The story file is not found. " + storyFile);
+
+    }
+
     private static List<com.moresby.have.domain.Story> parseStories(final Class<?> testClass) throws mByHaveException {
         final List<com.moresby.have.domain.Story> mutableStories = new ArrayList<com.moresby.have.domain.Story>();
         if (testClass.isAnnotationPresent(Story.class)) {
@@ -166,16 +218,8 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
             final String[] storyFiles = story.files();
 
             for (final String storyFile : storyFiles) {
-                System.out.println("Found storyFile: " + storyFile + " " + testClass.getPackage().getName());
 
-                InputStream storyIs = testClass.getClassLoader().getResourceAsStream("com/moresby/have/" + storyFile);
-                if (storyIs == null) {
-                    storyIs = ClassLoader.getSystemResourceAsStream(storyFile);
-                }
-                if (storyIs == null) {
-                    throw new mByHaveException("The story file is not found. " + storyFile);
-                }
-
+                final InputStream storyIs = loadResource(storyFile, testClass);
                 com.moresby.have.domain.Story storyObject;
                 try {
                     storyObject = parseStory(storyFile, storyIs);
@@ -271,7 +315,7 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
                     steps.add(scenarioBuilder.toString());
                     scenarioBuilder = new StringBuilder(line);
                 } else {
-                    scenarioDescription = "TODO";
+                    scenarioDescription = "TODO"; //TODO
                     scenarioBuilder = new StringBuilder(line);
                 }
             } else if (scenarioBuilder != null) {
@@ -345,44 +389,61 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
         return params;
     }
 
-    public static Map<Integer, MethodParameter> findParameterPositions(final String[] params, final String stepValue) {
+    public static Map<Integer, MethodParameter> findParameterPositions(final String[] paramNames, final String stepValue) {
 
         final Map<Integer, MethodParameter> result = new TreeMap<Integer, MethodParameter>();
-        if (params != null) {
-            for (int i = 0; i < params.length; i++) {
-                final String param = params[i];
-                System.out.println("param: " + param);
-                final String paramPlaceHolder = "{" + param + "}";
-                final int position = stepValue.indexOf(paramPlaceHolder);
-                System.out.println("Position: " + position);
-                if (position < 0) {
-                    throw new IllegalArgumentException(); //TODO other exception
+        if (paramNames != null) {
+            for (int i = 0; i < paramNames.length; i++) {
+
+                final String paramName        = paramNames[i];
+                final String paramPlaceHolder = getPlaceholderPattern(paramName);
+                final int    posInStepPattern = stepValue.indexOf(paramPlaceHolder);
+
+                System.out.println("Parameter: " + paramName);
+                System.out.println("Position:  " + posInStepPattern);
+
+                /* Check there is only one appearance in the stepPattern. */
+                if (posInStepPattern < 0) {
+                    throw new mByHaveException("The pattern does not contain placeholder for the " + paramName + " parameter.");
                 }
-                if (stepValue.indexOf(paramPlaceHolder, position + param.length()) >= 0) {
-                    throw new IllegalArgumentException(); //TODO Too many parameters.
+                if (stepValue.indexOf(paramPlaceHolder, posInStepPattern + paramName.length()) >= 0) {
+                    throw new mByHaveException("The pattern does contain more than one placeholder for the " + paramName + " parameter");
                 }
-                result.put(Integer.valueOf(position), new MethodParameter(param, i));
+
+                /* Add to the map. */
+                result.put(Integer.valueOf(posInStepPattern), new MethodParameter(paramName, i));
             }
         }
+
         return result;
     }
 
-    private static String createRegEx(final String stepValue, final Collection<String> params) {
+    private static String getPlaceholderPattern(final String paramName) {
+        return "$" + paramName;
+    }
+
+    private static String createRegEx(final String stepValue, final Collection<String> paramNames) {
         String regEx = stepValue;
-        for (final String param : params) {
-            final String paramPlaceHolder = "{" + param + "}";
+        for (final String paramName : paramNames) {
+            final String paramPlaceHolder = getPlaceholderPattern(paramName);
             regEx = regEx.replace(paramPlaceHolder, "(.*)");
         }
         return regEx;
     }
 
-    private void runCandidate(final Object testObject, final StepCandidate candidate, final Matcher matcher) throws mByHaveException {
+    private void runCandidate(final Object testObject, final StepCandidate candidate, final Matcher matcher, final String step) throws mByHaveException {
         final Map<Integer, MethodParameter> positions = candidate.getParameterPositions();
         int i = 1;
 
         final SortedMap<Integer, String> methodParameters = new TreeMap<Integer, String>();
         for (final MethodParameter param : positions.values()) {
-            final String paramValue = matcher.group(i++);
+            final int starts = matcher.start(i);
+            final int ends   = matcher.end(i);
+//            final String paramValue = matcher.group(i++);
+            final String paramValue = step.substring(starts, ends);
+            System.out.println("Param Value: " + paramValue + " Group: " + matcher.group(i));
+            i++;
+
             methodParameters.put(Integer.valueOf(param.getParamPos()), paramValue);
             System.out.println("Parameter name: " + param.getParamName() + " Value: " + paramValue);
         }
@@ -404,14 +465,24 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
 
     }
 
+//    private Integer[] lineBreakPositions(final String string) {
+//        final ArrayList<Integer> breakPositions = new ArrayList<Integer>();
+//        for (int index = string.indexOf('\n'); index >= 0; index = string.indexOf('\n', index + 1)) {
+//            breakPositions.add(Integer.valueOf(index));
+//        }
+//        return breakPositions.toArray(new Integer[] {});
+//    }
+
     private void runStep(final Object testObject, final String step, final Collection<StepCandidate> stepCandidates) throws mByHaveException {
         boolean found = false;
         for (final StepCandidate candidate : stepCandidates) {
-            final Matcher matcher = candidate.getPattern().matcher(step);
+
+//            final Integer[] breakPositions = lineBreakPositions(step);
+            final Matcher matcher = candidate.getPattern().matcher(step.replace('\n', ' '));
             if (matcher.find()) {
                 found = true;
                 System.out.println("FOUND! " + candidate.getValue());
-                runCandidate(testObject, candidate, matcher);
+                runCandidate(testObject, candidate, matcher, step);
                 break;
             }
         }

@@ -35,6 +35,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import com.moresby.have.annotations.Given;
+import com.moresby.have.exceptions.mByHaveAssertionError;
 
 /**
  * TODO javadoc.
@@ -44,16 +45,17 @@ import com.moresby.have.annotations.Given;
  */
 public class RunStepTest {
 
-    private boolean noParamGiven = false;
+    private boolean noParamGiven  = false;
     private boolean oneParamGiven = false;
     private String  oneParamParam = null;
+    private boolean regExpGiven   = false;
 
     @Given(" a no param given method")
     public void noParamGiven() {
         this.noParamGiven = true;
     }
 
-    @Given("one parameter {parameter}")
+    @Given("one parameter $parameter")
     public void oneParamGiven(final String parameter) {
         this.oneParamGiven = true;
         this.oneParamParam = parameter;
@@ -62,6 +64,11 @@ public class RunStepTest {
     @Given("test fail")
     public void testFail() {
         fail("This is a test. It have had to happen.");
+    }
+
+    @Given("(.*) pattern")
+    public void regExPatternTest() {
+        this.regExpGiven = true;
     }
 
     @Test
@@ -86,7 +93,20 @@ public class RunStepTest {
 
     @Test
     public void testFailTest() {
-        new mByHave(this).given("test fail");
+        boolean assertionError = false;
+        try {
+            new mByHave(this).given("test fail");
+        } catch (final mByHaveAssertionError e) {
+            throw e;
+        } catch (final AssertionError e) {
+            assertionError = true;
+        }
+        assertTrue(assertionError);
+    }
+
+    @Test(expected = mByHaveAssertionError.class)
+    public void testReqEx() {
+        new mByHave(this).given("dgagfdsagsa pattern");
     }
 
 }
