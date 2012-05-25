@@ -92,8 +92,4 @@ public class StepCandidate {
         return pattern;
     }
 
-    public boolean isMatch(final String step) {
-        return pattern.matcher(step).find();
-    }
-
 }
