@@ -55,10 +55,6 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.ParentRunner;
 import org.junit.runners.model.InitializationError;
 
-import com.thoughtworks.paranamer.BytecodeReadingParanamer;
-import com.thoughtworks.paranamer.CachingParanamer;
-import com.thoughtworks.paranamer.Paranamer;
-
 import com.moresby.have.StepCandidate.MethodParameter;
 import com.moresby.have.annotations.Given;
 import com.moresby.have.annotations.Story;
@@ -67,6 +63,9 @@ import com.moresby.have.annotations.When;
 import com.moresby.have.domain.Scenario;
 import com.moresby.have.exceptions.mByHaveAssertionError;
 import com.moresby.have.exceptions.mByHaveException;
+import com.thoughtworks.paranamer.BytecodeReadingParanamer;
+import com.thoughtworks.paranamer.CachingParanamer;
+import com.thoughtworks.paranamer.Paranamer;
 
 /**
  * TODO javadoc.
@@ -492,6 +491,229 @@ public class mByHaveRunner extends ParentRunner<Scenario> {
 
         System.out.println("End of scenario: " + scenario.getDescription());
     }
+
+
+//> EXPERIMENTAL MULTI LEVEL RUNNER
+
+
+    public static class StoryDescription {
+
+        private final String name;
+        private final Description description;
+        private final List<ScenarioDescription> scenarios;
+
+        /**
+         * @param name
+         * @param description
+         * @param scenarios
+         */
+        public StoryDescription(String name, Description description, List<ScenarioDescription> scenarios) {
+            super();
+            this.name = name;
+            this.description = description;
+            this.scenarios = scenarios;
+        }
+
+        /**
+         * @return the name
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * @return the description
+         */
+        public Description getDescription() {
+            return description;
+        }
+
+        /**
+         * @return the scenarios
+         */
+        public List<ScenarioDescription> getScenarios() {
+            return scenarios;
+        }
+
+    }
+
+
+    public static class ScenarioDescription {
+
+        private final String name;
+        private final Description description;
+        private final List<StepDescription> steps;
+        /**
+         * @param name
+         * @param description
+         * @param scenarios
+         */
+        public ScenarioDescription(String name, Description description, List<StepDescription> steps) {
+            super();
+            this.name = name;
+            this.description = description;
+            this.steps = steps;
+        }
+
+        /**
+         * @return the name
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * @return the description
+         */
+        public Description getDescription() {
+            return description;
+        }
+
+        /**
+         * @return the steps
+         */
+        public List<StepDescription> getSteps() {
+            return steps;
+        }
+
+
+    }
+
+
+    public static class StepDescription {
+
+        private final String step;
+        private final Description description;
+
+        /**
+         * @param step
+         * @param description
+         */
+        public StepDescription(String step, Description description) {
+            super();
+            this.step = step;
+            this.description = description;
+        }
+
+        /**
+         * @return the step
+         */
+        public String getStep() {
+            return step;
+        }
+
+        /**
+         * @return the description
+         */
+        public Description getDescription() {
+            return description;
+        }
+
+
+
+    }
+
+//    private Description mainDescription;
+//    private List<StoryDescription> storyDescriptions = Collections.emptyList();
+//    /** {@inheritDoc} */
+//    @Override
+//    public Description getDescription() {
+//        storyDescriptions = new ArrayList<StoryDescription>();
+//        mainDescription = Description.createSuiteDescription("Story file tests");
+//        for (final com.moresby.have.domain.Story story : stories) {
+//
+//            final Description storyDescription = Description.createSuiteDescription(story.getName());
+//            final List<ScenarioDescription> scenarioDescriptions = new ArrayList<ScenarioDescription>();
+//
+//            for (final Scenario scenario : story.getScenario()) {
+//                final Description scenarioDescription = Description.createSuiteDescription(scenario.getDescription());
+//                final List<StepDescription> stepDescriptions = new ArrayList<StepDescription>();
+//
+//                for (final String step : scenario.getSteps()) {
+//                    final Description stepDescription = Description.createTestDescription(testClass, step);
+//                    stepDescriptions.add(new StepDescription(step, stepDescription));
+//                    scenarioDescription.addChild(stepDescription);
+//                }
+//
+//                scenarioDescriptions.add(new ScenarioDescription(scenario.getDescription(), scenarioDescription, stepDescriptions));
+//                storyDescription.addChild(scenarioDescription);
+//            }
+//
+//            storyDescriptions.add(new StoryDescription(story.getName(), storyDescription, scenarioDescriptions));
+//            mainDescription.addChild(storyDescription);
+//        }
+//
+//        if (parentRunner == null) {
+//            return mainDescription;
+//        } else {
+//            final Description parentDescription = parentRunner.getDescription();
+//            parentDescription.addChild(mainDescription);
+//            return parentDescription;
+//        }
+//    }
+//
+//    /** {@inheritDoc} */
+//    @Override
+//    public void run(final RunNotifier notifier) {
+//        if (parentRunner != null) {
+//            parentRunner.run(notifier);
+//        }
+//
+//
+//        notifier.fireTestStarted(mainDescription);
+//
+//        for (final StoryDescription storyDescription : storyDescriptions) {
+//            notifier.fireTestStarted(storyDescription.getDescription());
+//            Failure storyFailure = null;
+//            try {
+//                for (final ScenarioDescription scenarioDescription : storyDescription.getScenarios()) {
+//                    Failure failure = null;
+//
+//                    notifier.fireTestStarted(scenarioDescription.getDescription());
+//
+//                    Object testObject;
+//                        testObject = testClass.newInstance();
+//
+//                    for (final StepDescription stepDescription : scenarioDescription.getSteps()) {
+//                        notifier.fireTestStarted(stepDescription.getDescription());
+//
+//                        try {
+//                            processStep(testObject, stepDescription.getStep());
+//                        } catch (Exception e) {
+//                            failure = new Failure(stepDescription.getDescription(), e);
+//                        }
+//                        if (failure != null) {
+//                            notifier.fireTestFailure(failure);
+//                            break;
+//                        } else {
+//                        }
+//                        notifier.fireTestFinished(stepDescription.getDescription());
+//                    }
+//                    if (failure != null) {
+//                        notifier.fireTestFailure(new Failure(scenarioDescription.getDescription(), failure.getException()));
+//                    }
+////
+//                    notifier.fireTestFinished(scenarioDescription.getDescription());
+//
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                storyFailure = new Failure(storyDescription.getDescription(), e);
+//            }
+////
+//            if (storyFailure == null) {
+//                notifier.fireTestFailure(storyFailure);
+//            } else {
+//                notifier.fireTestFinished(storyDescription.getDescription());
+//            }
+//
+//
+//        }
+//
+//        notifier.fireTestFinished(mainDescription);
+//    }
+
+
 
 
 }
