@@ -56,6 +56,10 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 
+import com.thoughtworks.paranamer.BytecodeReadingParanamer;
+import com.thoughtworks.paranamer.CachingParanamer;
+import com.thoughtworks.paranamer.Paranamer;
+
 import com.moresby.have.StepCandidate.MethodParameter;
 import com.moresby.have.annotations.Given;
 import com.moresby.have.annotations.Story;
@@ -64,20 +68,40 @@ import com.moresby.have.annotations.When;
 import com.moresby.have.domain.Scenario;
 import com.moresby.have.exceptions.mByHaveAssertionError;
 import com.moresby.have.exceptions.mByHaveException;
-import com.thoughtworks.paranamer.BytecodeReadingParanamer;
-import com.thoughtworks.paranamer.CachingParanamer;
-import com.thoughtworks.paranamer.Paranamer;
 
 /**
- * TODO javadoc.
+ * <p>A JUnit {@link Runner} implementation designed to run the mBy.Have story files.</p>
+ * <p>The mBy.Have <strong>story</strong> files consist of <strong>scenarios</strong>.
+ * Each scenario describes a test case and for each of them a new test object will be
+ * instantiated. A scenario can contain one or more <p>steps</p>. The steps contains the
+ * real logic of the test and they have three form: <strong>given</strong>,
+ * <strong>when</strong> and <strong>then</strong>. These step types ought to be used
+ * in this order (given, when, then) but there is not strict restriction. The behavior of
+ * them also the same only the Given, When, Then keywords are different.</p>
+ * <p>The steps in a scenario will be parsed and tired to be matched to an annotated
+ * method from the test class. There is one-one annotation for each step type:</p>
+ * <ul>
+ * <li>{@link Given} for the given steps,</li>
+ * <li>{@link When} for the when steps and</li>
+ * <li>{@link Then} for the then steps.</li>
+ * </ul>
+ * <p>Each annotation takes a value, which is a pattern by which the steps will be tried
+ * being matched.  ... parameter placeholder .....</p>
+ * ... relation between annotation value and step - parameter matching - greedy ....
+ * ... how to use ...
+ * ... example ...
  *
- * TODO line breaks
- * TODO replace {param} with $param. It's more similar to Jbehave.
+ *
+ * TODO auto parameter type conversion.
+ * TODO more javadoc
+ * TODO more tests.
+ * TODO code cleanup.
+ * TODO replace system.out.println to Log.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
+public class mByHaveRunner extends Runner {
 
     private final Map<Class<? extends Annotation>, StepKeyword>         keywords;
     private final Map<Class<? extends Annotation>, List<StepCandidate>> candidates;
@@ -105,8 +129,7 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
         this(testClass, true);
     }
 
-    public mByHaveRunner(final Class<?> testClass, final boolean parseStoryFiles) throws mByHaveException, InitializationError {
-//        super(testClass);
+    mByHaveRunner(final Class<?> testClass, final boolean parseStoryFiles) throws mByHaveException, InitializationError {
 
         this.testClass = testClass;
         initStepCandidates(testClass);
@@ -122,21 +145,21 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
 
     }
 
-//> PUBLIC METHODS
+//> PACKAGE PRIVATE METHODS
 
-    public void given(final Object testObject, final String given) throws mByHaveException {
+    void given(final Object testObject, final String given) throws mByHaveException {
         runStep(testObject, given, candidates.get(Given.class));
     }
 
-    public void when(final Object testObject, final String when) throws mByHaveException {
+    void when(final Object testObject, final String when) throws mByHaveException {
         runStep(testObject, when, candidates.get(When.class));
     }
 
-    public void then(final Object testObject, final String then) throws mByHaveException {
+    void then(final Object testObject, final String then) throws mByHaveException {
         runStep(testObject, then, candidates.get(Then.class));
     }
 
-    public void runScenario(final Object testObject, final String scenario) throws mByHaveException {
+    void runScenario(final Object testObject, final String scenario) throws mByHaveException {
 
         try {
             final byte[] bytes = scenario.getBytes("UTF-8");
@@ -153,7 +176,7 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
 
     }
 
-    public void runScenario(final Object testObject, final InputStream scenarioIs) throws IOException, mByHaveException {
+    void runScenario(final Object testObject, final InputStream scenarioIs) throws IOException, mByHaveException {
         final Scenario scenario = parseScenario(scenarioIs);
         processScenario(testObject, scenario);
     }
@@ -161,7 +184,9 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
 //> PRIVATE METHODS
 
     /**
-     * Loads a resource from the jar. The resource can be in the <tt>root</tt> or in the package of the testClass.
+     * Loads a resource from the jar. The resource can be in the <tt>root</tt> or
+     * in the package of the testClass. It tries to load by the testClass's
+     * ClassLoader, this runner's ClassLoader and the System testLoader as well.
      *
      * @param storyFile The name of the story file.
      * @param testClass The testClass.
@@ -296,12 +321,12 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
         String line = null;
         StringBuilder scenarioBuilder = null;
         boolean parseDescription = false;
-        while((line = reader.readLine()) != null) {
+        while ((line = reader.readLine()) != null) {
             if (line.startsWith("#")) {
                 continue;
             }
             if (line.startsWith("Scenario")) {
-                if (scenarioBuilder == null ) {
+                if (scenarioBuilder == null) {
                     scenarioBuilder = new StringBuilder(line);
                     parseDescription = true;
                 } else {
@@ -369,7 +394,7 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
                 final Map<Integer, MethodParameter> parameterPositions = findParameterPositions(params, definitionValue);
 
 
-                for(final Map.Entry<Integer, MethodParameter> paramPos : parameterPositions.entrySet()) {
+                for (final Map.Entry<Integer, MethodParameter> paramPos : parameterPositions.entrySet()) {
                     System.out.println("Position: " + paramPos.getKey() + " Param: " + paramPos.getValue().getParamName());
                 }
                 final String regEx = createRegEx(definitionValue, Arrays.asList(params));
@@ -381,8 +406,6 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
             }
         }
     }
-
-
 
     private static String[] getParameters(final Method method) {
         final Paranamer paranamer = new CachingParanamer(new BytecodeReadingParanamer());
@@ -471,19 +494,11 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
 
     }
 
-//    private Integer[] lineBreakPositions(final String string) {
-//        final ArrayList<Integer> breakPositions = new ArrayList<Integer>();
-//        for (int index = string.indexOf('\n'); index >= 0; index = string.indexOf('\n', index + 1)) {
-//            breakPositions.add(Integer.valueOf(index));
-//        }
-//        return breakPositions.toArray(new Integer[] {});
-//    }
 
     private void runStep(final Object testObject, final String step, final Collection<StepCandidate> stepCandidates) throws mByHaveException {
         boolean found = false;
         for (final StepCandidate candidate : stepCandidates) {
 
-//            final Integer[] breakPositions = lineBreakPositions(step);
             final Matcher matcher = candidate.getPattern().matcher(step.replace('\n', ' '));
             if (matcher.find()) {
                 found = true;
@@ -520,125 +535,9 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
 
 //> JUNIT RUNNER
 
-    public static class StoryDescription {
-
-        private final String name;
-        private final Description description;
-        private final List<ScenarioDescription> scenarios;
-
-        /**
-         * @param name
-         * @param description
-         * @param scenarios
-         */
-        public StoryDescription(String name, Description description, List<ScenarioDescription> scenarios) {
-            super();
-            this.name = name;
-            this.description = description;
-            this.scenarios = scenarios;
-        }
-
-        /**
-         * @return the name
-         */
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * @return the description
-         */
-        public Description getDescription() {
-            return description;
-        }
-
-        /**
-         * @return the scenarios
-         */
-        public List<ScenarioDescription> getScenarios() {
-            return scenarios;
-        }
-
-    }
-
-
-    public static class ScenarioDescription {
-
-        private final String name;
-        private final Description description;
-        private final List<StepDescription> steps;
-        /**
-         * @param name
-         * @param description
-         * @param scenarios
-         */
-        public ScenarioDescription(String name, Description description, List<StepDescription> steps) {
-            super();
-            this.name = name;
-            this.description = description;
-            this.steps = steps;
-        }
-
-        /**
-         * @return the name
-         */
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * @return the description
-         */
-        public Description getDescription() {
-            return description;
-        }
-
-        /**
-         * @return the steps
-         */
-        public List<StepDescription> getSteps() {
-            return steps;
-        }
-
-
-    }
-
-
-    public static class StepDescription {
-
-        private final String step;
-        private final Description description;
-
-        /**
-         * @param step
-         * @param description
-         */
-        public StepDescription(String step, Description description) {
-            super();
-            this.step = step;
-            this.description = description;
-        }
-
-        /**
-         * @return the step
-         */
-        public String getStep() {
-            return step;
-        }
-
-        /**
-         * @return the description
-         */
-        public Description getDescription() {
-            return description;
-        }
-
-
-
-    }
-
     private Description            mainDescription;
     private List<StoryDescription> storyDescriptions = Collections.emptyList();
+
     /** {@inheritDoc} */
     @Override
     public Description getDescription() {
@@ -648,7 +547,8 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
 
         int storyIndex = 0;
         storyDescriptions = new ArrayList<StoryDescription>();
-        mainDescription = Description.createSuiteDescription(testClass.getName());
+        mainDescription   = Description.createSuiteDescription(testClass.getName());
+
         for (final com.moresby.have.domain.Story story : stories) {
 
             final Description storyDescription = Description.createSuiteDescription(++storyIndex + ". " + story.getName().replace("\n", " "));
@@ -709,6 +609,121 @@ public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
             notifier.fireTestFailure(new Failure(mainDescription, t));
         }
         notifier.fireTestFinished(mainDescription);
+    }
+
+    private static class StoryDescription {
+
+        private final String                    name;
+        private final Description               description;
+        private final List<ScenarioDescription> scenarios;
+
+        /**
+         * @param name The name of the story. (the name of the file containing the story.)
+         * @param description The JUnit description.
+         * @param scenarios The JUnit descriptions of the scenarios.
+         */
+        private StoryDescription(final String name, final Description description, final List<ScenarioDescription> scenarios) {
+            super();
+            this.name        = name;
+            this.description = description;
+            this.scenarios   = scenarios;
+        }
+
+        /**
+         * @return the name The name of the story. (the name of the file containing the story.)
+         */
+        private String getName() {
+            return name;
+        }
+
+        /**
+         * @return the description The JUnit description.
+         */
+        private Description getDescription() {
+            return description;
+        }
+
+        /**
+         * @return the scenarios The JUnit descriptions of the scenarios.
+         */
+        private List<ScenarioDescription> getScenarios() {
+            return scenarios;
+        }
+
+    }
+
+
+    private static class ScenarioDescription {
+
+        private final String                name;
+        private final Description           description;
+        private final List<StepDescription> steps;
+
+        /**
+         * @param name The name of the scenario - parsed from the file/scenario definition.
+         * @param description The JUnit description.
+         * @param steps The description wrapper objects of the steps of the scenario.
+         */
+        private ScenarioDescription(final String name, final Description description, final List<StepDescription> steps) {
+            super();
+            this.name        = name;
+            this.description = description;
+            this.steps       = steps;
+        }
+
+        /**
+         * @return The name of the scenario - parsed from the file/scenario definition.
+         */
+        private String getName() {
+            return name;
+        }
+
+        /**
+         * @return The JUnit description.
+         */
+        private Description getDescription() {
+            return description;
+        }
+
+        /**
+         * @return The description wrapper objects of the steps of the scenario.
+         */
+        private List<StepDescription> getSteps() {
+            return steps;
+        }
+
+
+    }
+
+
+    private static class StepDescription {
+
+        private final String      step;
+        private final Description description;
+
+        /**
+         * @param step The <i>step</i>
+         * @param description The JUnit description of the step.
+         */
+        public StepDescription(final String step, final Description description) {
+            super();
+            this.step        = step;
+            this.description = description;
+        }
+
+        /**
+         * @return The <i>step</i>
+         */
+        public String getStep() {
+            return step;
+        }
+
+        /**
+         * @return The JUnit description of the step.
+         */
+        public Description getDescription() {
+            return description;
+        }
     }
 
 

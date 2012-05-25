@@ -215,5 +215,18 @@ public class RunScenarioTest {
         assertEquals("second", parameter2);
     }
 
+    @Test
+    public void runGivenWhenThenWithMethods() {
+        new mByHave(this).given("first method").
+                          when("second method when parameter").
+                          then("third parameter 123 second method");
+        assertTrue(first);
+        assertTrue(second);
+        assertTrue(third);
+        assertEquals("when parameter", parameter);
+        assertEquals("parameter 123", parameter1);
+        assertEquals("second", parameter2);
+    }
+
 
 }
