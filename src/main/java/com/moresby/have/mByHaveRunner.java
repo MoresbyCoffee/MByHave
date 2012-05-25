@@ -50,9 +50,9 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 
 import org.junit.runner.Description;
+import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.ParentRunner;
 import org.junit.runners.model.InitializationError;
 
 import com.moresby.have.StepCandidate.MethodParameter;
@@ -70,12 +70,13 @@ import com.thoughtworks.paranamer.Paranamer;
 /**
  * TODO javadoc.
  *
- * TODO exception handling. Hide the inside behavior, concentrate on the real problem.
+ * TODO line breaks
+ * TODO replace {param} with $param. It's more similar to Jbehave.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class mByHaveRunner extends ParentRunner<Scenario> {
+public class mByHaveRunner extends Runner/* ParentRunner<Scenario> */ {
 
     private final Map<Class<? extends Annotation>, StepKeyword>         keywords;
     private final Map<Class<? extends Annotation>, List<StepCandidate>> candidates;
@@ -104,7 +105,7 @@ public class mByHaveRunner extends ParentRunner<Scenario> {
     }
 
     public mByHaveRunner(final Class<?> testClass, final boolean parseStoryFiles) throws mByHaveException, InitializationError {
-        super(testClass);
+//        super(testClass);
 
         this.testClass = testClass;
         initStepCandidates(testClass);
@@ -177,7 +178,7 @@ public class mByHaveRunner extends ParentRunner<Scenario> {
 
                 com.moresby.have.domain.Story storyObject;
                 try {
-                    storyObject = parseStory(storyIs);
+                    storyObject = parseStory(storyFile, storyIs);
                 } catch (final IOException e) {
                     throw new mByHaveException("The story file is not readable. " + storyFile, e);
                 } finally {
@@ -193,7 +194,7 @@ public class mByHaveRunner extends ParentRunner<Scenario> {
         return Collections.unmodifiableList(mutableStories);
     }
 
-    private static com.moresby.have.domain.Story parseStory(final InputStream storyIs) throws mByHaveException, IOException {
+    private static com.moresby.have.domain.Story parseStory(final String storyName, final InputStream storyIs) throws mByHaveException, IOException {
         final InputStreamReader isReader = new InputStreamReader(storyIs);
         final BufferedReader    reader   = new BufferedReader(isReader);
 
@@ -220,7 +221,7 @@ public class mByHaveRunner extends ParentRunner<Scenario> {
         if (storyBuilder != null) {
             scenarios.add(parseScenario(storyBuilder.toString()));
         }
-        return new com.moresby.have.domain.Story("Story name", scenarios);
+        return new com.moresby.have.domain.Story(storyName, scenarios);
     }
 
     private static Scenario parseScenario(final String scenario) throws mByHaveException {
@@ -382,7 +383,7 @@ public class mByHaveRunner extends ParentRunner<Scenario> {
         final SortedMap<Integer, String> methodParameters = new TreeMap<Integer, String>();
         for (final MethodParameter param : positions.values()) {
             final String paramValue = matcher.group(i++);
-            methodParameters.put(param.getParamPos(), paramValue);
+            methodParameters.put(Integer.valueOf(param.getParamPos()), paramValue);
             System.out.println("Parameter name: " + param.getParamName() + " Value: " + paramValue);
         }
 
@@ -441,60 +442,6 @@ public class mByHaveRunner extends ParentRunner<Scenario> {
     }
 
 //> JUNIT RUNNER
-
-    /** {@inheritDoc} */
-    @Override
-    protected Description describeChild(final Scenario scenario) {
-        return Description.createSuiteDescription(scenario.getDescription());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected List<Scenario> getChildren() {
-        final List<Scenario> scenarios = new ArrayList<Scenario>();
-        for (final com.moresby.have.domain.Story story : stories) {
-            scenarios.addAll(story.getScenario());
-        }
-        return scenarios;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected void runChild(final Scenario scenario, final RunNotifier notifier) {
-
-        final Description scenarioDescription = Description.createSuiteDescription(scenario.getDescription());
-        Failure failure = null;
-
-        notifier.fireTestStarted(scenarioDescription);
-        Object testObject;
-        try {
-            testObject = testClass.newInstance();
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        for (final String step : scenario.getSteps()) {
-
-            try {
-                processStep(testObject, step);
-            } catch (final Throwable e) {
-                e.printStackTrace();
-                failure = new Failure(scenarioDescription, e);
-                break;
-            }
-        }
-        if (failure != null) {
-            notifier.fireTestFailure(failure);
-        } else {
-            notifier.fireTestFinished(scenarioDescription);
-        }
-
-        System.out.println("End of scenario: " + scenario.getDescription());
-    }
-
-
-//> EXPERIMENTAL MULTI LEVEL RUNNER
-
 
     public static class StoryDescription {
 
@@ -613,105 +560,79 @@ public class mByHaveRunner extends ParentRunner<Scenario> {
 
     }
 
-//    private Description mainDescription;
-//    private List<StoryDescription> storyDescriptions = Collections.emptyList();
-//    /** {@inheritDoc} */
-//    @Override
-//    public Description getDescription() {
-//        storyDescriptions = new ArrayList<StoryDescription>();
-//        mainDescription = Description.createSuiteDescription("Story file tests");
-//        for (final com.moresby.have.domain.Story story : stories) {
-//
-//            final Description storyDescription = Description.createSuiteDescription(story.getName());
-//            final List<ScenarioDescription> scenarioDescriptions = new ArrayList<ScenarioDescription>();
-//
-//            for (final Scenario scenario : story.getScenario()) {
-//                final Description scenarioDescription = Description.createSuiteDescription(scenario.getDescription());
-//                final List<StepDescription> stepDescriptions = new ArrayList<StepDescription>();
-//
-//                for (final String step : scenario.getSteps()) {
-//                    final Description stepDescription = Description.createTestDescription(testClass, step);
-//                    stepDescriptions.add(new StepDescription(step, stepDescription));
-//                    scenarioDescription.addChild(stepDescription);
-//                }
-//
-//                scenarioDescriptions.add(new ScenarioDescription(scenario.getDescription(), scenarioDescription, stepDescriptions));
-//                storyDescription.addChild(scenarioDescription);
-//            }
-//
-//            storyDescriptions.add(new StoryDescription(story.getName(), storyDescription, scenarioDescriptions));
-//            mainDescription.addChild(storyDescription);
-//        }
-//
-//        if (parentRunner == null) {
-//            return mainDescription;
-//        } else {
-//            final Description parentDescription = parentRunner.getDescription();
-//            parentDescription.addChild(mainDescription);
-//            return parentDescription;
-//        }
-//    }
-//
-//    /** {@inheritDoc} */
-//    @Override
-//    public void run(final RunNotifier notifier) {
-//        if (parentRunner != null) {
-//            parentRunner.run(notifier);
-//        }
-//
-//
-//        notifier.fireTestStarted(mainDescription);
-//
-//        for (final StoryDescription storyDescription : storyDescriptions) {
-//            notifier.fireTestStarted(storyDescription.getDescription());
-//            Failure storyFailure = null;
-//            try {
-//                for (final ScenarioDescription scenarioDescription : storyDescription.getScenarios()) {
-//                    Failure failure = null;
-//
-//                    notifier.fireTestStarted(scenarioDescription.getDescription());
-//
-//                    Object testObject;
-//                        testObject = testClass.newInstance();
-//
-//                    for (final StepDescription stepDescription : scenarioDescription.getSteps()) {
-//                        notifier.fireTestStarted(stepDescription.getDescription());
-//
-//                        try {
-//                            processStep(testObject, stepDescription.getStep());
-//                        } catch (Exception e) {
-//                            failure = new Failure(stepDescription.getDescription(), e);
-//                        }
-//                        if (failure != null) {
-//                            notifier.fireTestFailure(failure);
-//                            break;
-//                        } else {
-//                        }
-//                        notifier.fireTestFinished(stepDescription.getDescription());
-//                    }
-//                    if (failure != null) {
-//                        notifier.fireTestFailure(new Failure(scenarioDescription.getDescription(), failure.getException()));
-//                    }
-////
-//                    notifier.fireTestFinished(scenarioDescription.getDescription());
-//
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                storyFailure = new Failure(storyDescription.getDescription(), e);
-//            }
-////
-//            if (storyFailure == null) {
-//                notifier.fireTestFailure(storyFailure);
-//            } else {
-//                notifier.fireTestFinished(storyDescription.getDescription());
-//            }
-//
-//
-//        }
-//
-//        notifier.fireTestFinished(mainDescription);
-//    }
+    private Description            mainDescription;
+    private List<StoryDescription> storyDescriptions = Collections.emptyList();
+    /** {@inheritDoc} */
+    @Override
+    public Description getDescription() {
+        if (mainDescription != null) {
+            return mainDescription;
+        }
+
+        int storyIndex = 0;
+        storyDescriptions = new ArrayList<StoryDescription>();
+        mainDescription = Description.createSuiteDescription("Story file tests");
+        for (final com.moresby.have.domain.Story story : stories) {
+
+            final Description storyDescription = Description.createSuiteDescription(++storyIndex + ". " + story.getName().replace("\n", " "));
+            final List<ScenarioDescription> scenarioDescriptions = new ArrayList<ScenarioDescription>();
+
+            int scenarioIndex = 0;
+            for (final Scenario scenario : story.getScenario()) {
+                final Description scenarioDescription = Description.createSuiteDescription(storyIndex + "." + (++scenarioIndex) + ". " + scenario.getDescription().replace("\n", " "));
+                final List<StepDescription> stepDescriptions = new ArrayList<StepDescription>();
+                int stepIndex = 0;
+                for (final String step : scenario.getSteps()) {
+                    final Description stepDescription = Description.createTestDescription(testClass, storyIndex + "." + scenarioIndex + "." + (++stepIndex) + ". " + step.replace("\n", " "));
+                    stepDescriptions.add(new StepDescription(step, stepDescription));
+                    scenarioDescription.addChild(stepDescription);
+                    System.out.println("Add step: " + stepDescription);
+                }
+
+                scenarioDescriptions.add(new ScenarioDescription(scenario.getDescription(), scenarioDescription, stepDescriptions));
+                storyDescription.addChild(scenarioDescription);
+            }
+
+            storyDescriptions.add(new StoryDescription(story.getName(), storyDescription, scenarioDescriptions));
+            mainDescription.addChild(storyDescription);
+        }
+        return mainDescription;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void run(final RunNotifier notifier) {
+        notifier.fireTestStarted(mainDescription);
+        try {
+            for (final StoryDescription storyDescription : storyDescriptions) {
+                notifier.fireTestStarted(storyDescription.getDescription());
+                for (final ScenarioDescription scenarioDescription : storyDescription.getScenarios()) {
+                    notifier.fireTestStarted(scenarioDescription.getDescription());
+
+                    final Object testObject = testClass.newInstance();
+
+                    for (final StepDescription stepDescription : scenarioDescription.getSteps()) {
+                        notifier.fireTestStarted(stepDescription.getDescription());
+
+                        try {
+                            System.out.println("Process step: " + " scenarion : " + scenarioDescription.getName() + " step: " + stepDescription.getStep());
+                            processStep(testObject, stepDescription.getStep());
+                        } catch (final Throwable t) {
+                            notifier.fireTestFailure(new Failure(stepDescription.getDescription(), t));
+                            break;
+                        }
+
+                        notifier.fireTestFinished(stepDescription.getDescription());
+                    }
+                    notifier.fireTestFinished(scenarioDescription.getDescription());
+                }
+                notifier.fireTestFinished(storyDescription.getDescription());
+            }
+        } catch (final Throwable t) {
+            notifier.fireTestFailure(new Failure(mainDescription, t));
+        }
+        notifier.fireTestFinished(mainDescription);
+    }
 
 
 
