@@ -36,7 +36,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * TODO javadoc.
+ * Annotation for the given step definition keyword.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
@@ -45,6 +45,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Given {
 
-    String value();
+    String definition();
 
 }

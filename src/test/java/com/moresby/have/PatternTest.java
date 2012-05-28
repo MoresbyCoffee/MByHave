@@ -48,7 +48,7 @@ public class PatternTest {
 
 	private boolean somethingMethod = false;
 	
-	@Given("something test")
+	@Given(definition = "something test")
 	public void somethingMethod() {
 		this.somethingMethod = true;
 	}

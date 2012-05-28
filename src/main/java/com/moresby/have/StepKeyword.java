@@ -33,7 +33,8 @@ package com.moresby.have;
 import java.lang.annotation.Annotation;
 
 /**
- * TODO javadoc.
+ * Represents a step keyword. This keyword can be used as an annotation and 
+ * as a step description keyword as well.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
@@ -41,16 +42,16 @@ import java.lang.annotation.Annotation;
 public class StepKeyword {
 
     private final Class<? extends Annotation> annotation;
-    private final String                       keyword;
+    private final String                      keyword;
 
     /**
-     * @param annotation
-     * @param keyword
+     * @param annotation The annotation used as step definition
+     * @param keyword The keyword used in step description
      */
     public StepKeyword(final Class<? extends Annotation> annotation, final String keyword) {
         super();
         this.annotation = annotation;
-        this.keyword = keyword;
+        this.keyword    = keyword;
     }
 
     public Class<? extends Annotation> getAnnotation() {

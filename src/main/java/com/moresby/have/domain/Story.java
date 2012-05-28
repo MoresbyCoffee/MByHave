@@ -33,7 +33,7 @@ package com.moresby.have.domain;
 import java.util.List;
 
 /**
- * TODO javadoc.
+ * Represents a story (parsed story file, what consists of one or more {@link Scenario}s.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
@@ -44,8 +44,8 @@ public class Story {
     private final List<Scenario> scenario;
 
     /**
-     * @param name
-     * @param scenario
+     * @param name The name of the story file.
+     * @param scenario The list of the {@link Scenario}s.
      */
     public Story(final String name, final List<Scenario> scenario) {
         super();

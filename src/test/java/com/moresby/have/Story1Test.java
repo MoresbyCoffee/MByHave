@@ -60,17 +60,17 @@ public class Story1Test {
         fail("Test this fail");
     }
 
-    @Given("first method")
+    @Given(definition = "first method")
     public void firstMethod() {
         LOG.info("First out");
     }
 
-    @When("second method $param")
+    @When(definition = "second method $param")
     public void whenTestMethod(final String param) {
     	LOG.info("When test method: " + param);
     }
 
-    @Then("third $param1 $param2 method")
+    @Then(definition = "third $param1 $param2 method")
     public void thenTwoParamMethod(final String param1, final String param2) {
     	LOG.info("Then test param1: " + param1 + " param2: " + param2);
     }

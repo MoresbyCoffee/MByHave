@@ -31,41 +31,36 @@
 package com.moresby.have.exceptions;
 
 /**
- * TODO javadoc.
+ * A runtime exception to signal the errors in the MByHave lib.
+ * All the possible compile time exceptions are wrapped in this
+ * class to be easy to handle the exceptions.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
 public class MByHaveException extends RuntimeException {
 
-    /**
-     *
-     */
+    /** @see java.io.Serializable */
+	private static final long serialVersionUID = 1L;
+
+	/** @see Exception#Exception() */
     public MByHaveException() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
-    /**
-     * @param arg0
-     * @param arg1
-     */
-    public MByHaveException(final String arg0, final Throwable arg1) {
-        super(arg0, arg1);
+	/** @see Exception#Exception(String, Throwable) */
+    public MByHaveException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 
-    /**
-     * @param arg0
-     */
-    public MByHaveException(final String arg0) {
-        super(arg0);
+	/** @see Exception#Exception(String) */
+    public MByHaveException(final String message) {
+        super(message);
     }
 
-    /**
-     * @param arg0
-     */
-    public MByHaveException(final Throwable arg0) {
-        super(arg0);
+	/** @see Exception#Exception(Throwable) */
+    public MByHaveException(final Throwable cause) {
+        super(cause);
     }
 
 }

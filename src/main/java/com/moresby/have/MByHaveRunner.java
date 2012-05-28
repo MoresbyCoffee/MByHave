@@ -371,17 +371,17 @@ public class MByHaveRunner extends Runner {
         if (annotation == Given.class) {
             if (method.isAnnotationPresent(Given.class)) {
                 final Given given = method.getAnnotation(Given.class);
-                return given.value();
+                return given.definition();
             }
         } else if (annotation == When.class) {
             if (method.isAnnotationPresent(When.class)) {
                 final When when = method.getAnnotation(When.class);
-                return when.value();
+                return when.definition();
             }
         } else if (annotation == Then.class) {
             if (method.isAnnotationPresent(Then.class)) {
                 final Then then = method.getAnnotation(Then.class);
-                return then.value();
+                return then.definition();
             }
         }
         return null;
@@ -476,7 +476,7 @@ public class MByHaveRunner extends Runner {
 
     private void runCandidate(final Object testObject, final StepCandidate candidate, final Matcher matcher, final String step) throws MByHaveException {
         
-    	LOG.fine("Run stepCandiate: " + candidate.getValue());
+    	LOG.fine("Run stepCandiate: " + candidate.getStepDefinition());
     	final Map<Integer, MethodParameter> positions = candidate.getParameterPositions();
         int i = 1;
 

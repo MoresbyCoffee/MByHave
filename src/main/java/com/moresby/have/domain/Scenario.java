@@ -33,7 +33,7 @@ package com.moresby.have.domain;
 import java.util.List;
 
 /**
- * TODO javadoc.
+ * Represents a Scenario what consists of one or more steps.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
@@ -44,8 +44,8 @@ public class Scenario {
     private final List<String> steps;
 
     /**
-     * @param description
-     * @param steps
+     * @param description The description of the Scenarion
+     * @param steps The list of steps.
      */
     public Scenario(final String description, final List<String> steps) {
         super();

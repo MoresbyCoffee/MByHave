@@ -35,12 +35,25 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+/**
+ * Represents a method in the test class which is annotated to be a step and
+ * can be matched to a step description.<br>
+ * The class consists of the original step definition, the {@link Method method object}
+ * the method parameters (in a map which maintains the order of the parameters) and 
+ * the {@link Pattern regex pattern} through which the step descriptions will be
+ * matched to this {@link StepCandidate}. 
+ * 
+ * TODO remove map and use an sorted list.
+ * 
+ * @author Barnabas Sudy (barnabas.sudy@gmail.com)
+ * @since 2012
+ */
 public class StepCandidate {
 
     public static class MethodParameter {
 
         private final String paramName;
-        private final int   paramPos;
+        private final int    paramPos;
 
         /**
          * @param paramName
@@ -49,7 +62,7 @@ public class StepCandidate {
         public MethodParameter(final String paramName, final int paramPos) {
             super();
             this.paramName = paramName;
-            this.paramPos = paramPos;
+            this.paramPos  = paramPos;
         }
 
         public String getParamName() {
@@ -59,32 +72,39 @@ public class StepCandidate {
             return paramPos;
         }
 
-
     }
 
+    private final String                        stepDefinition;
+    private final Method                        method;
+    private final Pattern                       pattern;
+    private final Map<Integer, MethodParameter> parameterPositions;
 
-    private final String               value;
-    private final Method               method;
-    private final Map<Integer, StepCandidate.MethodParameter> parameterPositions;
-    private final Pattern              pattern;
 
-
-    public StepCandidate(final String value, final Method method, final Map<Integer, StepCandidate.MethodParameter> parameterPositions, final String regEx) {
-        this.value              = value;
+    /**
+     * @param stepDefinition The step definition
+     * @param method The method
+     * @param parameterPositions The method parameters
+     * @param regEx The regular expression
+     */
+    public StepCandidate(final String stepDefinition, 
+    					 final Method method, 
+    					 final Map<Integer, MethodParameter> parameterPositions, 
+    					 final String regEx) {
+        this.stepDefinition     = stepDefinition;
         this.method             = method;
         this.parameterPositions = Collections.unmodifiableMap(parameterPositions);
         this.pattern            = Pattern.compile(regEx);
     }
 
-    public String getValue() {
-        return value;
+    public String getStepDefinition() {
+        return stepDefinition;
     }
 
     public Method getMethod() {
         return method;
     }
 
-    public Map<Integer, StepCandidate.MethodParameter> getParameterPositions() {
+    public Map<Integer, MethodParameter> getParameterPositions() {
         return parameterPositions;
     }
 
