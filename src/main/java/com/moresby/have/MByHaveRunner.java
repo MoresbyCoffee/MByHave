@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -102,6 +104,9 @@ import com.moresby.have.exceptions.MByHaveException;
  * @since 2012
  */
 public class MByHaveRunner extends Runner {
+	
+	/** Logger. */
+	private static Logger LOG = Logger.getLogger(MByHaveRunner.class.getName());
 
     private final Map<Class<? extends Annotation>, StepKeyword>         keywords;
     private final Map<Class<? extends Annotation>, List<StepCandidate>> candidates;
@@ -170,7 +175,6 @@ public class MByHaveRunner extends Runner {
                 inputStream.close();
             }
         } catch (final IOException e) {
-            //TODO should not happen.
             throw new RuntimeException(e);
         }
 
@@ -330,7 +334,7 @@ public class MByHaveRunner extends Runner {
                     scenarioBuilder = new StringBuilder(line);
                     parseDescription = true;
                 } else {
-                    throw new IllegalArgumentException("This scenario contains two scenario descriptions.");
+                    throw new MByHaveException("This scenario contains two scenario descriptions.");
                 }
             } else if (line.startsWith("Given") || line.startsWith("When") || line.startsWith("Then")) {
                 if (parseDescription) {
@@ -341,7 +345,7 @@ public class MByHaveRunner extends Runner {
                     steps.add(scenarioBuilder.toString());
                     scenarioBuilder = new StringBuilder(line);
                 } else {
-                    scenarioDescription = "TODO"; //TODO
+                    scenarioDescription = "Scenario"; //Default scenario description
                     scenarioBuilder = new StringBuilder(line);
                 }
             } else if (scenarioBuilder != null) {
@@ -350,7 +354,7 @@ public class MByHaveRunner extends Runner {
         }
         if (scenarioBuilder != null) {
             if (parseDescription) {
-                throw new IllegalArgumentException("The scenario description does not contain any step description");
+                throw new MByHaveException("The scenario description does not contain any step description");
             }
             steps.add(scenarioBuilder.toString());
         }
@@ -384,22 +388,36 @@ public class MByHaveRunner extends Runner {
     }
 
 
+    /**
+     * Finds and initializes the step candidates.
+     * This method looks for the <tt>annotated</tt> methods in the <tt>testClass</tt> and adds the found
+     * methods as {@link StepCandidate}s to the <tt>stepCandidatesList</tt>
+     *  
+     * @param annotation The annotation the method is looking for.
+     * @param testClass The class the method is scanning for annotated methods.
+     * @param stepCandidatesList The list to which the annotated methods will be added as {@link StepCandidate}s. 
+     */
     private static <T extends Annotation> void initStepCandidates(final Class<T> annotation, final Class<?> testClass, final List<StepCandidate> stepCandidatesList) {
+    	LOG.info("Init candidates");
         for (final Method method : testClass.getDeclaredMethods()) {
             final String definitionValue = getAnnotationValue(annotation, method);
             if (definitionValue != null) {
-                System.out.println("Given: " + definitionValue);
+                LOG.finer("Step definition: " + definitionValue);
 
+                /* Retrieves the method parameters. */
                 final String[] params = getParameters(method);
+                /* Finds the parameters in the step definition string. */
                 final Map<Integer, MethodParameter> parameterPositions = findParameterPositions(params, definitionValue);
 
-
-                for (final Map.Entry<Integer, MethodParameter> paramPos : parameterPositions.entrySet()) {
-                    System.out.println("Position: " + paramPos.getKey() + " Param: " + paramPos.getValue().getParamName());
+                /* Logs the method parameters. */
+                if (LOG.isLoggable(Level.FINER)) {
+	                for (final Map.Entry<Integer, MethodParameter> paramPos : parameterPositions.entrySet()) {
+	                    LOG.finer("Position: " + paramPos.getKey() + " Param: " + paramPos.getValue().getParamName());
+	                }
                 }
                 final String regEx = createRegEx(definitionValue, Arrays.asList(params));
 
-                System.out.println("RegEx: " + regEx);
+                LOG.finer("RegEx: " + regEx);
 
                 stepCandidatesList.add(new StepCandidate(definitionValue, method, parameterPositions, regEx));
 
@@ -423,8 +441,8 @@ public class MByHaveRunner extends Runner {
                 final String paramPlaceHolder = getPlaceholderPattern(paramName);
                 final int    posInStepPattern = stepValue.indexOf(paramPlaceHolder);
 
-                System.out.println("Parameter: " + paramName);
-                System.out.println("Position:  " + posInStepPattern);
+                LOG.fine("Parameter: " + paramName);
+                LOG.fine("Position:  " + posInStepPattern);
 
                 /* Check there is only one appearance in the stepPattern. */
                 if (posInStepPattern < 0) {
@@ -448,8 +466,6 @@ public class MByHaveRunner extends Runner {
 
     private static String createRegEx(final String stepValue, final Collection<String> paramNames) {
         String regEx = Pattern.quote(stepValue);
-        System.out.println("StepValue: " + stepValue);
-        System.out.println("Escaped:   " + regEx);
 
         for (final String paramName : paramNames) {
             final String paramPlaceHolder = getPlaceholderPattern(paramName);
@@ -459,7 +475,9 @@ public class MByHaveRunner extends Runner {
     }
 
     private void runCandidate(final Object testObject, final StepCandidate candidate, final Matcher matcher, final String step) throws MByHaveException {
-        final Map<Integer, MethodParameter> positions = candidate.getParameterPositions();
+        
+    	LOG.fine("Run stepCandiate: " + candidate.getValue());
+    	final Map<Integer, MethodParameter> positions = candidate.getParameterPositions();
         int i = 1;
 
         final SortedMap<Integer, String> methodParameters = new TreeMap<Integer, String>();
@@ -469,15 +487,15 @@ public class MByHaveRunner extends Runner {
 
             final String paramValue = step.substring(starts, ends);
 
-            System.out.println("Param Value: " + paramValue + " Group: " + matcher.group(i));
+            LOG.finer("Param Value: " + paramValue + " Group: " + matcher.group(i));
             i++;
 
             methodParameters.put(Integer.valueOf(param.getParamPos()), paramValue);
 
-            System.out.println("Parameter name: " + param.getParamName() + " Value: " + paramValue);
+            LOG.finer("Parameter name: " + param.getParamName() + " Value: " + paramValue);
         }
 
-        System.out.println("Params: " + candidate.getMethod().getParameterTypes().length);
+        LOG.finer("Num of params: " + candidate.getMethod().getParameterTypes().length);
 
         try {
             candidate.getMethod().invoke(testObject, methodParameters.values().toArray());
@@ -502,7 +520,6 @@ public class MByHaveRunner extends Runner {
             final Matcher matcher = candidate.getPattern().matcher(step.replace('\n', ' '));
             if (matcher.find()) {
                 found = true;
-                System.out.println("FOUND! " + candidate.getValue());
                 runCandidate(testObject, candidate, matcher, step);
                 break;
             }
@@ -514,14 +531,14 @@ public class MByHaveRunner extends Runner {
     }
 
     private void processScenario(final Object testObject, final Scenario scenario) throws MByHaveException {
-        System.out.println("Description: " + scenario.getDescription());
+        LOG.info("Process Scenario: " + scenario.getDescription());
         for (final String step : scenario.getSteps()) {
             processStep(testObject, step);
         }
     }
 
     private void processStep(final Object testObject, final String step) throws MByHaveException {
-        System.out.println("Process step: " + step);
+        LOG.info("Process step: " + step);
         
         for (final StepKeyword keyword : keywords.values()) {
             if (step.startsWith(keyword.getKeyword())) {
@@ -567,7 +584,6 @@ public class MByHaveRunner extends Runner {
                     final Description stepDescription = Description.createTestDescription(testClass, storyIndex + "." + scenarioIndex + "." + (++stepIndex) + ". " + step.replace("\n", " "));
                     stepDescriptions.add(new StepDescription(step, stepDescription));
                     scenarioDescription.addChild(stepDescription);
-                    System.out.println("Add step: " + stepDescription);
                 }
 
                 scenarioDescriptions.add(new ScenarioDescription(scenario.getDescription(), scenarioDescription, stepDescriptions));
@@ -596,7 +612,6 @@ public class MByHaveRunner extends Runner {
                         notifier.fireTestStarted(stepDescription.getDescription());
 
                         try {
-                            System.out.println("Process step: " + " scenarion : " + scenarioDescription.getName() + " step: " + stepDescription.getStep());
                             processStep(testObject, stepDescription.getStep());
                         } catch (final Throwable t) {
                             notifier.fireTestFailure(new Failure(stepDescription.getDescription(), t));

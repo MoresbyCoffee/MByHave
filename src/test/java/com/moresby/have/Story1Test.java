@@ -32,6 +32,8 @@ package com.moresby.have;
 
 import static org.junit.Assert.*;
 
+import java.util.logging.Logger;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,6 +51,9 @@ import com.moresby.have.annotations.When;
 @RunWith(MByHaveRunner.class)
 @Story(files = "storytest1.story")
 public class Story1Test {
+	
+	/** Logger. */
+	private static final Logger LOG = Logger.getLogger(Story1Test.class.getName());
 
     @Test
     public void test() {
@@ -57,16 +62,16 @@ public class Story1Test {
 
     @Given("first method")
     public void firstMethod() {
-        System.out.println("First out");
+        LOG.info("First out");
     }
 
     @When("second method $param")
     public void whenTestMethod(final String param) {
-        System.out.println("When test method: " + param);
+    	LOG.info("When test method: " + param);
     }
 
     @Then("third $param1 $param2 method")
     public void thenTwoParamMethod(final String param1, final String param2) {
-        System.out.println("Then test param1: " + param1 + " param2: " + param2);
+    	LOG.info("Then test param1: " + param1 + " param2: " + param2);
     }
 }

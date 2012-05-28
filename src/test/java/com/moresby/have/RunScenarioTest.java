@@ -38,6 +38,7 @@ import com.moresby.have.annotations.Given;
 import com.moresby.have.annotations.Then;
 import com.moresby.have.annotations.When;
 import com.moresby.have.exceptions.MByHaveAssertionError;
+import com.moresby.have.exceptions.MByHaveException;
 
 /**
  * Tests the {@link MByHave#runScenario(String)} method.
@@ -107,7 +108,7 @@ public class RunScenarioTest {
         assertFalse(third);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = MByHaveException.class)
     public void runWithTwoScenarioDescription1() {
         new MByHave(this).runScenario("Scenario Scenario description \n" +
                                        "Scenario Second description \n" +
@@ -117,7 +118,7 @@ public class RunScenarioTest {
         assertFalse(third);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = MByHaveException.class)
     public void runWithTwoScenarioDescription2() {
         new MByHave(this).runScenario("Scenario Scenario description \n" +
                                        "Given first method\n" +
