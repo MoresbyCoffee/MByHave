@@ -455,7 +455,7 @@ public class MByHaveRunner extends Runner {
             final String paramPlaceHolder = getPlaceholderPattern(paramName);
             regEx = regEx.replace(paramPlaceHolder, "\\E(.*)\\Q");
         }
-        return regEx;
+        return '^' + regEx + '$';
     }
 
     private void runCandidate(final Object testObject, final StepCandidate candidate, final Matcher matcher, final String step) throws MByHaveException {
@@ -522,10 +522,14 @@ public class MByHaveRunner extends Runner {
 
     private void processStep(final Object testObject, final String step) throws MByHaveException {
         System.out.println("Process step: " + step);
-        //TODO get rid of the keyword!
+        
         for (final StepKeyword keyword : keywords.values()) {
             if (step.startsWith(keyword.getKeyword())) {
-                runStep(testObject, step, candidates.get(keyword.getAnnotation()));
+            	
+            	/* Gets rid of the keyword and the leading and trailing whitespace. */
+            	final String trimmedStep = step.substring(keyword.getKeyword().length()).trim();
+            	
+                runStep(testObject, trimmedStep, candidates.get(keyword.getAnnotation()));
                 return;
             }
         }
