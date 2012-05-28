@@ -37,10 +37,10 @@ import org.junit.Test;
 import com.moresby.have.annotations.Given;
 import com.moresby.have.annotations.Then;
 import com.moresby.have.annotations.When;
-import com.moresby.have.exceptions.mByHaveAssertionError;
+import com.moresby.have.exceptions.MByHaveAssertionError;
 
 /**
- * Tests the {@link mByHave#runScenario(String)} method.
+ * Tests the {@link MByHave#runScenario(String)} method.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
@@ -76,12 +76,12 @@ public class RunScenarioTest {
     @Test(expected = NullPointerException.class)
     public void runNull() {
 
-        new mByHave(this).runScenario(null);
+        new MByHave(this).runScenario(null);
     }
 
     @Test
     public void runGiven() {
-        new mByHave(this).runScenario("Given first method");
+        new MByHave(this).runScenario("Given first method");
         assertTrue(first);
         assertFalse(second);
         assertFalse(third);
@@ -90,9 +90,9 @@ public class RunScenarioTest {
     @Test(expected = AssertionError.class)
     public void runUnknownGiven() {
         try {
-            new mByHave(this).runScenario("Given unknown given pattern");
+            new MByHave(this).runScenario("Given unknown given pattern");
         } catch (final AssertionError e) {
-            assertTrue(e instanceof mByHaveAssertionError);
+            assertTrue(e instanceof MByHaveAssertionError);
             throw e;
         }
         fail("It should have thrown a AssertionError.");
@@ -100,7 +100,7 @@ public class RunScenarioTest {
 
     @Test
     public void runWithScenarioDescription() {
-        new mByHave(this).runScenario("Scenario Scenario description \n" +
+        new MByHave(this).runScenario("Scenario Scenario description \n" +
         		                       "Given first method");
         assertTrue(first);
         assertFalse(second);
@@ -109,7 +109,7 @@ public class RunScenarioTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void runWithTwoScenarioDescription1() {
-        new mByHave(this).runScenario("Scenario Scenario description \n" +
+        new MByHave(this).runScenario("Scenario Scenario description \n" +
                                        "Scenario Second description \n" +
                                        "Given first method");
         assertTrue(first);
@@ -119,7 +119,7 @@ public class RunScenarioTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void runWithTwoScenarioDescription2() {
-        new mByHave(this).runScenario("Scenario Scenario description \n" +
+        new MByHave(this).runScenario("Scenario Scenario description \n" +
                                        "Given first method\n" +
                                        "Scenario Second description");
         assertTrue(first);
@@ -129,7 +129,7 @@ public class RunScenarioTest {
 
     @Test
     public void runWhen() {
-        new mByHave(this).runScenario("When second method parameter123");
+        new MByHave(this).runScenario("When second method parameter123");
         assertFalse(first);
         assertTrue(second);
         assertFalse(third);
@@ -140,9 +140,9 @@ public class RunScenarioTest {
     @Test(expected = AssertionError.class)
     public void runUnknownWhen() {
         try {
-            new mByHave(this).runScenario("When unknown given pattern");
+            new MByHave(this).runScenario("When unknown given pattern");
         } catch (final AssertionError e) {
-            assertTrue(e instanceof mByHaveAssertionError);
+            assertTrue(e instanceof MByHaveAssertionError);
             throw e;
         }
         fail("It should have thrown a AssertionError.");
@@ -150,7 +150,7 @@ public class RunScenarioTest {
 
     @Test
     public void runGivenWhen() {
-        new mByHave(this).runScenario("Given first method\n" +
+        new MByHave(this).runScenario("Given first method\n" +
                                        "When second method parameter 123");
         assertTrue(first);
         assertTrue(second);
@@ -160,7 +160,7 @@ public class RunScenarioTest {
 
     @Test
     public void runGivenWhenTwice() {
-        new mByHave(this).runScenario("Given first method\n" +
+        new MByHave(this).runScenario("Given first method\n" +
                                        "When second method parameter 123\n" +
                                        "When second method second method");
         assertTrue(first);
@@ -171,7 +171,7 @@ public class RunScenarioTest {
 
     @Test
     public void runThen() {
-        new mByHave(this).runScenario("Then third firstparam secondparam method");
+        new MByHave(this).runScenario("Then third firstparam secondparam method");
         assertFalse(first);
         assertFalse(second);
         assertTrue(third);
@@ -182,9 +182,9 @@ public class RunScenarioTest {
     @Test(expected = AssertionError.class)
     public void runUnknownThen() {
         try {
-            new mByHave(this).runScenario("Then unknown given pattern");
+            new MByHave(this).runScenario("Then unknown given pattern");
         } catch (final AssertionError e) {
-            assertTrue(e instanceof mByHaveAssertionError);
+            assertTrue(e instanceof MByHaveAssertionError);
             throw e;
         }
         fail("It should have thrown a AssertionError.");
@@ -192,7 +192,7 @@ public class RunScenarioTest {
 
     @Test
     public void runGivenThen() {
-        new mByHave(this).runScenario("Given first method\n" +
+        new MByHave(this).runScenario("Given first method\n" +
                                        "Then third parameter 123 second method");
         assertTrue(first);
         assertFalse(second);
@@ -204,7 +204,7 @@ public class RunScenarioTest {
 
     @Test
     public void runGivenWhenThen() {
-        new mByHave(this).runScenario("Given first method\n" +
+        new MByHave(this).runScenario("Given first method\n" +
                                        "When second method when parameter\n" +
                                        "Then third parameter 123 second method");
         assertTrue(first);
@@ -217,7 +217,7 @@ public class RunScenarioTest {
 
     @Test
     public void runGivenWhenThenWithMethods() {
-        new mByHave(this).given("first method").
+        new MByHave(this).given("first method").
                           when("second method when parameter").
                           then("third parameter 123 second method");
         assertTrue(first);

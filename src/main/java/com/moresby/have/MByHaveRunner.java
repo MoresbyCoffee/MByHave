@@ -66,8 +66,8 @@ import com.moresby.have.annotations.Story;
 import com.moresby.have.annotations.Then;
 import com.moresby.have.annotations.When;
 import com.moresby.have.domain.Scenario;
-import com.moresby.have.exceptions.mByHaveAssertionError;
-import com.moresby.have.exceptions.mByHaveException;
+import com.moresby.have.exceptions.MByHaveAssertionError;
+import com.moresby.have.exceptions.MByHaveException;
 
 /**
  * <p>A JUnit {@link Runner} implementation designed to run the mBy.Have story files.</p>
@@ -101,7 +101,7 @@ import com.moresby.have.exceptions.mByHaveException;
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class mByHaveRunner extends Runner {
+public class MByHaveRunner extends Runner {
 
     private final Map<Class<? extends Annotation>, StepKeyword>         keywords;
     private final Map<Class<? extends Annotation>, List<StepCandidate>> candidates;
@@ -125,11 +125,11 @@ public class mByHaveRunner extends Runner {
 
 //> CONSTRUCTORS
 
-    public mByHaveRunner(final Class<?> testClass) throws mByHaveException, InitializationError {
+    public MByHaveRunner(final Class<?> testClass) throws MByHaveException, InitializationError {
         this(testClass, true);
     }
 
-    mByHaveRunner(final Class<?> testClass, final boolean parseStoryFiles) throws mByHaveException, InitializationError {
+    MByHaveRunner(final Class<?> testClass, final boolean parseStoryFiles) throws MByHaveException, InitializationError {
 
         this.testClass = testClass;
         initStepCandidates(testClass);
@@ -147,19 +147,19 @@ public class mByHaveRunner extends Runner {
 
 //> PACKAGE PRIVATE METHODS
 
-    void given(final Object testObject, final String given) throws mByHaveException {
+    void given(final Object testObject, final String given) throws MByHaveException {
         runStep(testObject, given, candidates.get(Given.class));
     }
 
-    void when(final Object testObject, final String when) throws mByHaveException {
+    void when(final Object testObject, final String when) throws MByHaveException {
         runStep(testObject, when, candidates.get(When.class));
     }
 
-    void then(final Object testObject, final String then) throws mByHaveException {
+    void then(final Object testObject, final String then) throws MByHaveException {
         runStep(testObject, then, candidates.get(Then.class));
     }
 
-    void runScenario(final Object testObject, final String scenario) throws mByHaveException {
+    void runScenario(final Object testObject, final String scenario) throws MByHaveException {
 
         try {
             final byte[] bytes = scenario.getBytes("UTF-8");
@@ -176,7 +176,7 @@ public class mByHaveRunner extends Runner {
 
     }
 
-    void runScenario(final Object testObject, final InputStream scenarioIs) throws IOException, mByHaveException {
+    void runScenario(final Object testObject, final InputStream scenarioIs) throws IOException, MByHaveException {
         final Scenario scenario = parseScenario(scenarioIs);
         processScenario(testObject, scenario);
     }
@@ -191,9 +191,9 @@ public class mByHaveRunner extends Runner {
      * @param storyFile The name of the story file.
      * @param testClass The testClass.
      * @return The InputStream of the story file.
-     * @throws mByHaveException If the file is not found.
+     * @throws MByHaveException If the file is not found.
      */
-    private static InputStream loadResource(final String storyFile, final Class<?> testClass) throws mByHaveException {
+    private static InputStream loadResource(final String storyFile, final Class<?> testClass) throws MByHaveException {
 
         {
             final InputStream storyIs = testClass.getClassLoader().getResourceAsStream(storyFile);
@@ -202,7 +202,7 @@ public class mByHaveRunner extends Runner {
             }
         }
         {
-            final InputStream storyIs = mByHaveRunner.class.getClassLoader().getResourceAsStream(storyFile);
+            final InputStream storyIs = MByHaveRunner.class.getClassLoader().getResourceAsStream(storyFile);
             if (storyIs != null) {
                 return storyIs;
             }
@@ -221,7 +221,7 @@ public class mByHaveRunner extends Runner {
             }
         }
         {
-            final InputStream storyIs = mByHaveRunner.class.getClassLoader().getResourceAsStream(packageName + "/" + storyFile);
+            final InputStream storyIs = MByHaveRunner.class.getClassLoader().getResourceAsStream(packageName + "/" + storyFile);
             if (storyIs != null) {
                 return storyIs;
             }
@@ -233,11 +233,11 @@ public class mByHaveRunner extends Runner {
             }
         }
 
-        throw new mByHaveException("The story file is not found. " + storyFile);
+        throw new MByHaveException("The story file is not found. " + storyFile);
 
     }
 
-    private static List<com.moresby.have.domain.Story> parseStories(final Class<?> testClass) throws mByHaveException {
+    private static List<com.moresby.have.domain.Story> parseStories(final Class<?> testClass) throws MByHaveException {
         final List<com.moresby.have.domain.Story> mutableStories = new ArrayList<com.moresby.have.domain.Story>();
         if (testClass.isAnnotationPresent(Story.class)) {
             final Story story = testClass.getAnnotation(Story.class);
@@ -250,7 +250,7 @@ public class mByHaveRunner extends Runner {
                 try {
                     storyObject = parseStory(storyFile, storyIs);
                 } catch (final IOException e) {
-                    throw new mByHaveException("The story file is not readable. " + storyFile, e);
+                    throw new MByHaveException("The story file is not readable. " + storyFile, e);
                 } finally {
                     try {
                         storyIs.close();
@@ -264,7 +264,7 @@ public class mByHaveRunner extends Runner {
         return Collections.unmodifiableList(mutableStories);
     }
 
-    private static com.moresby.have.domain.Story parseStory(final String storyName, final InputStream storyIs) throws mByHaveException, IOException {
+    private static com.moresby.have.domain.Story parseStory(final String storyName, final InputStream storyIs) throws MByHaveException, IOException {
         final InputStreamReader isReader = new InputStreamReader(storyIs);
         final BufferedReader    reader   = new BufferedReader(isReader);
 
@@ -294,7 +294,7 @@ public class mByHaveRunner extends Runner {
         return new com.moresby.have.domain.Story(storyName, scenarios);
     }
 
-    private static Scenario parseScenario(final String scenario) throws mByHaveException {
+    private static Scenario parseScenario(final String scenario) throws MByHaveException {
 
         try {
             final byte[] bytes = scenario.getBytes("UTF-8");
@@ -311,7 +311,7 @@ public class mByHaveRunner extends Runner {
 
     }
 
-    private static Scenario parseScenario(final InputStream scenario) throws mByHaveException, IOException {
+    private static Scenario parseScenario(final InputStream scenario) throws MByHaveException, IOException {
         final InputStreamReader isReader = new InputStreamReader(scenario);
         final BufferedReader    reader   = new BufferedReader(isReader);
 
@@ -428,10 +428,10 @@ public class mByHaveRunner extends Runner {
 
                 /* Check there is only one appearance in the stepPattern. */
                 if (posInStepPattern < 0) {
-                    throw new mByHaveException("The pattern does not contain placeholder for the " + paramName + " parameter.");
+                    throw new MByHaveException("The pattern does not contain placeholder for the " + paramName + " parameter.");
                 }
                 if (stepValue.indexOf(paramPlaceHolder, posInStepPattern + paramName.length()) >= 0) {
-                    throw new mByHaveException("The pattern does contain more than one placeholder for the " + paramName + " parameter");
+                    throw new MByHaveException("The pattern does contain more than one placeholder for the " + paramName + " parameter");
                 }
 
                 /* Add to the map. */
@@ -458,7 +458,7 @@ public class mByHaveRunner extends Runner {
         return regEx;
     }
 
-    private void runCandidate(final Object testObject, final StepCandidate candidate, final Matcher matcher, final String step) throws mByHaveException {
+    private void runCandidate(final Object testObject, final StepCandidate candidate, final Matcher matcher, final String step) throws MByHaveException {
         final Map<Integer, MethodParameter> positions = candidate.getParameterPositions();
         int i = 1;
 
@@ -482,20 +482,20 @@ public class mByHaveRunner extends Runner {
         try {
             candidate.getMethod().invoke(testObject, methodParameters.values().toArray());
         } catch (final IllegalArgumentException e) {
-            throw new mByHaveException("The parameters could not be matched.", e);
+            throw new MByHaveException("The parameters could not be matched.", e);
         } catch (final IllegalAccessException e) {
-            throw new mByHaveException("The annotatated method should be public.", e);
+            throw new MByHaveException("The annotatated method should be public.", e);
         } catch (final InvocationTargetException e) {
             if (e.getTargetException() instanceof AssertionError) {
                 throw (AssertionError) e.getTargetException();
             }
-            throw new mByHaveException(e);
+            throw new MByHaveException(e);
         }
 
     }
 
 
-    private void runStep(final Object testObject, final String step, final Collection<StepCandidate> stepCandidates) throws mByHaveException {
+    private void runStep(final Object testObject, final String step, final Collection<StepCandidate> stepCandidates) throws MByHaveException {
         boolean found = false;
         for (final StepCandidate candidate : stepCandidates) {
 
@@ -508,19 +508,19 @@ public class mByHaveRunner extends Runner {
             }
         }
         if (!found) {
-            throw new mByHaveAssertionError("No maching step to the \"" + step + "\" step definition.");
+            throw new MByHaveAssertionError("No maching step to the \"" + step + "\" step definition.");
         }
 
     }
 
-    private void processScenario(final Object testObject, final Scenario scenario) throws mByHaveException {
+    private void processScenario(final Object testObject, final Scenario scenario) throws MByHaveException {
         System.out.println("Description: " + scenario.getDescription());
         for (final String step : scenario.getSteps()) {
             processStep(testObject, step);
         }
     }
 
-    private void processStep(final Object testObject, final String step) throws mByHaveException {
+    private void processStep(final Object testObject, final String step) throws MByHaveException {
         System.out.println("Process step: " + step);
         //TODO get rid of the keyword!
         for (final StepKeyword keyword : keywords.values()) {

@@ -46,7 +46,7 @@ import com.moresby.have.annotations.When;
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-@RunWith(mByHaveRunner.class)
+@RunWith(MByHaveRunner.class)
 @Story(files = "storytest1.story")
 public class Story1Test {
 

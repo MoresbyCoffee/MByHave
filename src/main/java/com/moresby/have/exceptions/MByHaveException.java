@@ -36,12 +36,12 @@ package com.moresby.have.exceptions;
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class mByHaveException extends RuntimeException {
+public class MByHaveException extends RuntimeException {
 
     /**
      *
      */
-    public mByHaveException() {
+    public MByHaveException() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -50,21 +50,21 @@ public class mByHaveException extends RuntimeException {
      * @param arg0
      * @param arg1
      */
-    public mByHaveException(final String arg0, final Throwable arg1) {
+    public MByHaveException(final String arg0, final Throwable arg1) {
         super(arg0, arg1);
     }
 
     /**
      * @param arg0
      */
-    public mByHaveException(final String arg0) {
+    public MByHaveException(final String arg0) {
         super(arg0);
     }
 
     /**
      * @param arg0
      */
-    public mByHaveException(final Throwable arg0) {
+    public MByHaveException(final Throwable arg0) {
         super(arg0);
     }
 

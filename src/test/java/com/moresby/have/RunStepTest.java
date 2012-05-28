@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import com.moresby.have.annotations.Given;
-import com.moresby.have.exceptions.mByHaveAssertionError;
+import com.moresby.have.exceptions.MByHaveAssertionError;
 
 /**
  * TODO javadoc.
@@ -73,20 +73,20 @@ public class RunStepTest {
 
     @Test
     public void runGiven() {
-        new mByHave(this).given(" a no param given method");
+        new MByHave(this).given(" a no param given method");
         assertTrue(noParamGiven);
     }
 
     @Test
     public void runGivenOneParameter() {
-        new mByHave(this).given("one parameter test parameter text");
+        new MByHave(this).given("one parameter test parameter text");
         assertTrue(oneParamGiven);
         assertEquals("test parameter text", oneParamParam);
     }
 
     @Test
     public void runGivenOneParameterLineBreak() {
-        new mByHave(this).given("one parameter test parameter\n text");
+        new MByHave(this).given("one parameter test parameter\n text");
         assertTrue(oneParamGiven);
         assertEquals("test parameter\n text", oneParamParam);
     }
@@ -95,8 +95,8 @@ public class RunStepTest {
     public void testFailTest() {
         boolean assertionError = false;
         try {
-            new mByHave(this).given("test fail");
-        } catch (final mByHaveAssertionError e) {
+            new MByHave(this).given("test fail");
+        } catch (final MByHaveAssertionError e) {
             throw e;
         } catch (final AssertionError e) {
             assertionError = true;
@@ -104,14 +104,14 @@ public class RunStepTest {
         assertTrue(assertionError);
     }
 
-    @Test(expected = mByHaveAssertionError.class)
+    @Test(expected = MByHaveAssertionError.class)
     public void testReqEx() {
-        new mByHave(this).given("dgagfdsagsa pattern");
+        new MByHave(this).given("dgagfdsagsa pattern");
     }
 
     @Test
     public void testReqEx2() {
-        new mByHave(this).given("(.*) pattern");
+        new MByHave(this).given("(.*) pattern");
         assertTrue(regExpGiven);
     }
 
@@ -142,7 +142,7 @@ public class RunStepTest {
 
     @Test
     public void testTwoTwoParameterGiven() {
-        new mByHave(this).given("second text blah \nblah  test").given("given text blah blah blah blah");
+        new MByHave(this).given("second text blah \nblah  test").given("given text blah blah blah blah");
 
         assertTrue(secondTwoParamGivenMethod);
         assertEquals("blah \nblah ", secondTwoParamGivenMethodParam1);
@@ -156,7 +156,7 @@ public class RunStepTest {
 
     @Test
     public void testRunScenario() {
-        new mByHave(this).runScenario("Given second text blah blah\n" +
+        new MByHave(this).runScenario("Given second text blah blah\n" +
                                       "Given given text blah blah1 \ndsfas blah blah");
 
         assertTrue(secondTwoParamGivenMethod);

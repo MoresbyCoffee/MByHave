@@ -39,7 +39,7 @@ import junit.framework.AssertionFailedError;
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class mByHaveAssertionError extends AssertionFailedError {
+public class MByHaveAssertionError extends AssertionFailedError {
 
     /** @see java.io.Serializable */
     private static final long serialVersionUID = 1L;
@@ -47,14 +47,14 @@ public class mByHaveAssertionError extends AssertionFailedError {
     /**
      *
      */
-    public mByHaveAssertionError() {
+    public MByHaveAssertionError() {
         super();
     }
 
     /**
      * @param message
      */
-    public mByHaveAssertionError(final String message) {
+    public MByHaveAssertionError(final String message) {
         super(message);
     }
 
