@@ -72,8 +72,8 @@ import com.moresby.have.exceptions.MByHaveAssertionError;
 import com.moresby.have.exceptions.MByHaveException;
 
 /**
- * <p>A JUnit {@link Runner} implementation designed to run the mBy.Have story files.</p>
- * <p>The mBy.Have <strong>story</strong> files consist of <strong>scenarios</strong>.
+ * <p>A JUnit {@link Runner} implementation designed to run the MBy.Have story files.</p>
+ * <p>The MBy.Have <strong>story</strong> files consist of <strong>scenarios</strong>.
  * Each scenario describes a test case and for each of them a new test object will be
  * instantiated. A scenario can contain one or more <p>steps</p>. The steps contains the
  * real logic of the test and they have three form: <strong>given</strong>,
@@ -88,17 +88,79 @@ import com.moresby.have.exceptions.MByHaveException;
  * <li>{@link Then} for the then steps.</li>
  * </ul>
  * <p>Each annotation takes a value, which is a pattern by which the steps will be tried
- * being matched.  ... parameter placeholder .....</p>
- * ... relation between annotation value and step - parameter matching - greedy ....
- * ... how to use ...
- * ... example ...
+ * being matched. The patterns has to contain the placeholders of the method parameters. 
+ * The placeholder syntax is: <strong><tt>$paramname</tt></strong>.</p>
+ * <p>The pattern matching will match the step description and the method (defined by the
+ * step definition) with the parameters. To pick up the parameter values, a reqEx pattern
+ * will be used with <tt>(.*)</tt> pattern at the parameter placeholders. The matcher 
+ * will work in - called - greedy mode so it will pick up the longest possible string 
+ * from the step description.</p>
+ * <p>To learn more about pattern matching visit the official Java site: 
+ * <a href="http://docs.oracle.com/javase/tutorial/essential/regex/">http://docs.oracle.com/javase/tutorial/essential/regex/</a></p>
+ * <h4>How to use</h4>
+ * <p>To use the MByHaveRunner the test class has to contain one or more annotated step 
+ * definition methods. The step definitions has to contain placeholder for each method 
+ * parameter. The method parameter has to be {@link java.lang.String}. The test class has
+ * to be annotated with {@link org.junit.runner.RunWith} - added this class as parameter -
+ * and with {@link Story} - added the story files as parameter.
+ * </p>
+ * <h4>Example</h4>
+ * <h5>Test class</h5>
+ * <pre>
+ *    &#064;RunWith(MByHaveRunner.class)
+ *    &#064;Story(files = "storytest1.story")
+ *    public class Story1Test {
+ *	
  *
+ *        &#064;Given(definition = "first method")
+ *        public void firstMethod() {
+ *            ...
+ *        }
  *
- * TODO auto parameter type conversion.
- * TODO more javadoc
- * TODO more tests.
- * TODO code cleanup.
- * TODO replace system.out.println to Log.
+ *        &#064;When(definition = "second method $param")
+ *        public void whenTestMethod(final String param) {
+ *    	      ...
+ *        }
+ *
+ *        &#064;Then(definition = "third $param1 $param2 method")
+ *        public void thenTwoParamMethod(final String param1, final String param2) {
+ *    	     ...
+ *        }
+ *    }
+ * </pre>
+ * <h5>storytest1.story story file</h5>
+ * <pre>
+ * #This is a comment
+ * 
+ * Scenario show how this works
+ * Given first method
+ * When second method <strong>param1</strong>
+ * Then third <strong>param1</strong> <strong>param2</strong> method
+ * 
+ * Scenario second scenario
+ * Given first method
+ * When second method <strong>trick</strong>
+ * Then third <strong>blah blah</strong> <strong>ehe</strong> method
+ * </pre>
+ * <h4>Roadmap</h4>
+ * <h5>v1.0</h5>
+ * <ul>
+ * <li>more javadoc</li>
+ * <li>code cleanup - split up MByHaveRunner.</li>
+ * </ul>
+ * 
+ * <h5>v1.1</h5>
+ * <ul>
+ * <li>auto parameter type conversion</li>
+ * </ul>
+ * <h5>v1.2</h5>
+ * <ul>
+ * <li><tt>And</tt> keyword</li>
+ * </ul>
+ * <h5>v2.0</h5>
+ * <ul>
+ * <li>android integration</li>
+ * </ul>
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
@@ -586,11 +648,11 @@ public class MByHaveRunner extends Runner {
                     scenarioDescription.addChild(stepDescription);
                 }
 
-                scenarioDescriptions.add(new ScenarioDescription(scenario.getDescription(), scenarioDescription, stepDescriptions));
+                scenarioDescriptions.add(new ScenarioDescription(scenarioDescription, stepDescriptions));
                 storyDescription.addChild(scenarioDescription);
             }
 
-            storyDescriptions.add(new StoryDescription(story.getName(), storyDescription, scenarioDescriptions));
+            storyDescriptions.add(new StoryDescription(storyDescription, scenarioDescriptions));
             mainDescription.addChild(storyDescription);
         }
         return mainDescription;
@@ -632,27 +694,17 @@ public class MByHaveRunner extends Runner {
 
     private static class StoryDescription {
 
-        private final String                    name;
         private final Description               description;
         private final List<ScenarioDescription> scenarios;
 
         /**
-         * @param name The name of the story. (the name of the file containing the story.)
          * @param description The JUnit description.
          * @param scenarios The JUnit descriptions of the scenarios.
          */
-        private StoryDescription(final String name, final Description description, final List<ScenarioDescription> scenarios) {
+        private StoryDescription(final Description description, final List<ScenarioDescription> scenarios) {
             super();
-            this.name        = name;
             this.description = description;
             this.scenarios   = scenarios;
-        }
-
-        /**
-         * @return the name The name of the story. (the name of the file containing the story.)
-         */
-        private String getName() {
-            return name;
         }
 
         /**
@@ -674,27 +726,17 @@ public class MByHaveRunner extends Runner {
 
     private static class ScenarioDescription {
 
-        private final String                name;
         private final Description           description;
         private final List<StepDescription> steps;
 
         /**
-         * @param name The name of the scenario - parsed from the file/scenario definition.
          * @param description The JUnit description.
          * @param steps The description wrapper objects of the steps of the scenario.
          */
-        private ScenarioDescription(final String name, final Description description, final List<StepDescription> steps) {
+        private ScenarioDescription(final Description description, final List<StepDescription> steps) {
             super();
-            this.name        = name;
             this.description = description;
             this.steps       = steps;
-        }
-
-        /**
-         * @return The name of the scenario - parsed from the file/scenario definition.
-         */
-        private String getName() {
-            return name;
         }
 
         /**
@@ -724,7 +766,7 @@ public class MByHaveRunner extends Runner {
          * @param step The <i>step</i>
          * @param description The JUnit description of the step.
          */
-        public StepDescription(final String step, final Description description) {
+        private StepDescription(final String step, final Description description) {
             super();
             this.step        = step;
             this.description = description;
@@ -733,14 +775,14 @@ public class MByHaveRunner extends Runner {
         /**
          * @return The <i>step</i>
          */
-        public String getStep() {
+        private String getStep() {
             return step;
         }
 
         /**
          * @return The JUnit description of the step.
          */
-        public Description getDescription() {
+        private Description getDescription() {
             return description;
         }
     }
