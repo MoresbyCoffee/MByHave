@@ -57,7 +57,7 @@ public class Story1Test {
 
     @Test
     public void test() {
-        fail("Test this fail");
+        fail("This test should not run.");
     }
 
     @Given(definition = "first method")

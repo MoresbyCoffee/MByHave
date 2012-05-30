@@ -152,6 +152,7 @@ import com.moresby.have.exceptions.MByHaveException;
  * <h5>v1.1</h5>
  * <ul>
  * <li>auto parameter type conversion</li>
+ * <li>NetBeans test result fix</li>
  * </ul>
  * <h5>v1.2</h5>
  * <ul>
