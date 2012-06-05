@@ -28,23 +28,37 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.have.annotations;
+package org.moresbycoffee.have.domain;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.List;
 
 /**
- * Annotation for the given step definition keyword.
+ * Represents a Scenario what consists of one or more steps.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Given {
+public class Scenario {
 
-    String definition();
+    private final String       description;
+    private final List<String> steps;
+
+    /**
+     * @param description The description of the Scenarion
+     * @param steps The list of steps.
+     */
+    public Scenario(final String description, final List<String> steps) {
+        super();
+        this.description = description;
+        this.steps       = steps;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+    public List<String> getSteps() {
+        return steps;
+    }
+
 
 }

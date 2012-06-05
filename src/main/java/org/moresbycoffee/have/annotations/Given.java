@@ -28,39 +28,23 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.have.exceptions;
+package org.moresbycoffee.have.annotations;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * A runtime exception to signal the errors in the MByHave lib.
- * All the possible compile time exceptions are wrapped in this
- * class to be easy to handle the exceptions.
+ * Annotation for the given step definition keyword.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class MByHaveException extends RuntimeException {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Given {
 
-    /** @see java.io.Serializable */
-	private static final long serialVersionUID = 1L;
-
-	/** @see Exception#Exception() */
-    public MByHaveException() {
-        super();
-    }
-
-	/** @see Exception#Exception(String, Throwable) */
-    public MByHaveException(final String message, final Throwable cause) {
-        super(message, cause);
-    }
-
-	/** @see Exception#Exception(String) */
-    public MByHaveException(final String message) {
-        super(message);
-    }
-
-	/** @see Exception#Exception(Throwable) */
-    public MByHaveException(final Throwable cause) {
-        super(cause);
-    }
+    String definition();
 
 }

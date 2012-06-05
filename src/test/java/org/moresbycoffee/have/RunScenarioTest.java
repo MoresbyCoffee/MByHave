@@ -28,17 +28,18 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.have;
+package org.moresbycoffee.have;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import org.moresbycoffee.have.MByHave;
+import org.moresbycoffee.have.annotations.Given;
+import org.moresbycoffee.have.annotations.Then;
+import org.moresbycoffee.have.annotations.When;
+import org.moresbycoffee.have.exceptions.MByHaveAssertionError;
+import org.moresbycoffee.have.exceptions.MByHaveException;
 
-import com.moresby.have.annotations.Given;
-import com.moresby.have.annotations.Then;
-import com.moresby.have.annotations.When;
-import com.moresby.have.exceptions.MByHaveAssertionError;
-import com.moresby.have.exceptions.MByHaveException;
 
 /**
  * Tests the {@link MByHave#runScenario(String)} method.

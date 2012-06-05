@@ -28,14 +28,15 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.have;
+package org.moresbycoffee.have;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+import org.moresbycoffee.have.MByHave;
+import org.moresbycoffee.have.annotations.Given;
+import org.moresbycoffee.have.exceptions.MByHaveAssertionError;
 
-import com.moresby.have.annotations.Given;
-import com.moresby.have.exceptions.MByHaveAssertionError;
 
 /**
  * TODO javadoc.

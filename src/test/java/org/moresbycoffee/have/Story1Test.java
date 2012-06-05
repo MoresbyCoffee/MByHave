@@ -28,37 +28,51 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.have.domain;
+package org.moresbycoffee.have;
 
-import java.util.List;
+import static org.junit.Assert.*;
+
+import java.util.logging.Logger;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.moresbycoffee.have.MByHaveRunner;
+import org.moresbycoffee.have.annotations.Given;
+import org.moresbycoffee.have.annotations.Story;
+import org.moresbycoffee.have.annotations.Then;
+import org.moresbycoffee.have.annotations.When;
+
 
 /**
- * Represents a Scenario what consists of one or more steps.
+ * TODO javadoc.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class Scenario {
+@RunWith(MByHaveRunner.class)
+@Story(files = "storytest1.story")
+public class Story1Test {
+	
+	/** Logger. */
+	private static final Logger LOG = Logger.getLogger(Story1Test.class.getName());
 
-    private final String       description;
-    private final List<String> steps;
-
-    /**
-     * @param description The description of the Scenarion
-     * @param steps The list of steps.
-     */
-    public Scenario(final String description, final List<String> steps) {
-        super();
-        this.description = description;
-        this.steps       = steps;
+    @Test
+    public void test() {
+        fail("This test should not run.");
     }
 
-    public String getDescription() {
-        return description;
-    }
-    public List<String> getSteps() {
-        return steps;
+    @Given(definition = "first method")
+    public void firstMethod() {
+        LOG.info("First out");
     }
 
+    @When(definition = "second method $param")
+    public void whenTestMethod(final String param) {
+    	LOG.info("When test method: " + param);
+    }
 
+    @Then(definition = "third $param1 $param2 method")
+    public void thenTwoParamMethod(final String param1, final String param2) {
+    	LOG.info("Then test param1: " + param1 + " param2: " + param2);
+    }
 }

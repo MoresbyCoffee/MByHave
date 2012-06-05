@@ -28,7 +28,7 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.have;
+package org.moresbycoffee.have;
 
 import java.lang.reflect.Method;
 import java.util.Collections;

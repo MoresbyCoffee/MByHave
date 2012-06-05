@@ -28,17 +28,17 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.have;
+package org.moresbycoffee.have;
 
 import org.junit.runners.model.InitializationError;
+import org.moresbycoffee.have.exceptions.MByHaveException;
 
-import com.moresby.have.exceptions.MByHaveException;
 
 /**
  * <p>The main class of moresBy.Have for inline usage.</p>
  * <p>This class can be instantiated in a test class and the
- * {@link com.moresby.have.annotations.Given}, {@link com.moresby.have.annotations.When}
- * and {@link com.moresby.have.annotations.Then} annotated methods. The annotations have
+ * {@link org.moresbycoffee.have.annotations.Given}, {@link org.moresbycoffee.have.annotations.When}
+ * and {@link org.moresbycoffee.have.annotations.Then} annotated methods. The annotations have
  * a mandatory field where the <i>pattern</i> string has to be defined. The annotated
  * methods can take <strong>parameters</strong> what has to appear in the pattern string
  * prefixed a <code>$</code>. During the behavior procession these patterns will be
@@ -118,15 +118,15 @@ public class MByHave {
 
 
     /**
-     * <p>Tries to match a {@link com.moresby.have.annotations.Given} annotated
+     * <p>Tries to match a {@link org.moresbycoffee.have.annotations.Given} annotated
      * method by the <tt>given</tt> parameter value.</p>
      * <p>If it finds one it will invoke with the <i>parsed parameter values</i>.</p>
-     * <p>If there is no matching {@link com.moresby.have.annotations.Given}
-     * annotated method, an {@link com.moresby.have.exceptions.MByHaveAssertionError}
+     * <p>If there is no matching {@link org.moresbycoffee.have.annotations.Given}
+     * annotated method, an {@link org.moresbycoffee.have.exceptions.MByHaveAssertionError}
      * will occur. It will mark the test <i>failed</i>.</p>
      *
      * @param given The string which will be tried to be matched with a
-     *      {@link com.moresby.have.annotations.Given} annotated method.
+     *      {@link org.moresbycoffee.have.annotations.Given} annotated method.
      * @return the invoked instance to be chainable.
      * @throws MByHaveException If any error occurs during the process.
      */
@@ -136,15 +136,15 @@ public class MByHave {
     }
 
     /**
-     * <p>Tries to match a {@link com.moresby.have.annotations.When} annotated method
+     * <p>Tries to match a {@link org.moresbycoffee.have.annotations.When} annotated method
      * by the <tt>when</tt> parameter value.</p>
      * <p>If it finds one it will invoke with the <i>parsed parameter values</i>.</p>
-     * <p>If there is no matching {@link com.moresby.have.annotations.When} annotated
-     * method, an {@link com.moresby.have.exceptions.MByHaveAssertionError}
+     * <p>If there is no matching {@link org.moresbycoffee.have.annotations.When} annotated
+     * method, an {@link org.moresbycoffee.have.exceptions.MByHaveAssertionError}
      * will occur. It will mark the test <i>failed</i>.</p>
      *
      * @param when The string which will be tried to be matched with a
-     *      {@link com.moresby.have.annotations.When} annotated method.
+     *      {@link org.moresbycoffee.have.annotations.When} annotated method.
      * @return the invoked instance to be chainable.
      * @throws MByHaveException If any error occurs during the process.
      */
@@ -154,15 +154,15 @@ public class MByHave {
     }
 
     /**
-     * <p>Tries to match a {@link com.moresby.have.annotations.Then} annotated
+     * <p>Tries to match a {@link org.moresbycoffee.have.annotations.Then} annotated
      * method by the <tt>then</tt> parameter value.</p>
      * <p>If it finds one it will invoke with the <i>parsed parameter values</i>.</p>
-     * <p>If there is no matching {@link com.moresby.have.annotations.Then}
-     * annotated method, an {@link com.moresby.have.exceptions.MByHaveAssertionError}
+     * <p>If there is no matching {@link org.moresbycoffee.have.annotations.Then}
+     * annotated method, an {@link org.moresbycoffee.have.exceptions.MByHaveAssertionError}
      * will occur. It will mark the test <i>failed</i>.</p>
      *
      * @param then The string which will be tried to be matched with a
-     *      {@link com.moresby.have.annotations.Then} annotated method.
+     *      {@link org.moresbycoffee.have.annotations.Then} annotated method.
      * @return the invoked instance to be chainable.
      * @throws MByHaveException If any error occurs during the process.
      */
@@ -176,7 +176,7 @@ public class MByHave {
      * <i>then</i> steps and tries to match them to annotated method. If is matches
      * the annotated method will be invoked with the parsed parameters.</p>
      * <p>If there is no matching annotated method, an
-     * {@link com.moresby.have.exceptions.MByHaveAssertionError}
+     * {@link org.moresbycoffee.have.exceptions.MByHaveAssertionError}
      * will occur. It will mark the test <i>failed</i>.</p>
      *
      * @param scenario The scenario script

@@ -28,7 +28,7 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.have;
+package org.moresbycoffee.have;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -57,19 +57,19 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
+import org.moresbycoffee.have.StepCandidate.MethodParameter;
+import org.moresbycoffee.have.annotations.Given;
+import org.moresbycoffee.have.annotations.Story;
+import org.moresbycoffee.have.annotations.Then;
+import org.moresbycoffee.have.annotations.When;
+import org.moresbycoffee.have.domain.Scenario;
+import org.moresbycoffee.have.exceptions.MByHaveAssertionError;
+import org.moresbycoffee.have.exceptions.MByHaveException;
 
 import com.thoughtworks.paranamer.BytecodeReadingParanamer;
 import com.thoughtworks.paranamer.CachingParanamer;
 import com.thoughtworks.paranamer.Paranamer;
 
-import com.moresby.have.StepCandidate.MethodParameter;
-import com.moresby.have.annotations.Given;
-import com.moresby.have.annotations.Story;
-import com.moresby.have.annotations.Then;
-import com.moresby.have.annotations.When;
-import com.moresby.have.domain.Scenario;
-import com.moresby.have.exceptions.MByHaveAssertionError;
-import com.moresby.have.exceptions.MByHaveException;
 
 /**
  * <p>A JUnit {@link Runner} implementation designed to run the MBy.Have story files.</p>
@@ -188,7 +188,7 @@ public class MByHaveRunner extends Runner {
         candidates = Collections.unmodifiableMap(mutableCandidates);
     }
 
-    private final List<com.moresby.have.domain.Story> stories;
+    private final List<org.moresbycoffee.have.domain.Story> stories;
     private final Class<?> testClass;
 
 //> CONSTRUCTORS
@@ -304,8 +304,8 @@ public class MByHaveRunner extends Runner {
 
     }
 
-    private static List<com.moresby.have.domain.Story> parseStories(final Class<?> testClass) throws MByHaveException {
-        final List<com.moresby.have.domain.Story> mutableStories = new ArrayList<com.moresby.have.domain.Story>();
+    private static List<org.moresbycoffee.have.domain.Story> parseStories(final Class<?> testClass) throws MByHaveException {
+        final List<org.moresbycoffee.have.domain.Story> mutableStories = new ArrayList<org.moresbycoffee.have.domain.Story>();
         if (testClass.isAnnotationPresent(Story.class)) {
             final Story story = testClass.getAnnotation(Story.class);
             final String[] storyFiles = story.files();
@@ -313,7 +313,7 @@ public class MByHaveRunner extends Runner {
             for (final String storyFile : storyFiles) {
 
                 final InputStream storyIs = loadResource(storyFile, testClass);
-                com.moresby.have.domain.Story storyObject;
+                org.moresbycoffee.have.domain.Story storyObject;
                 try {
                     storyObject = parseStory(storyFile, storyIs);
                 } catch (final IOException e) {
@@ -331,7 +331,7 @@ public class MByHaveRunner extends Runner {
         return Collections.unmodifiableList(mutableStories);
     }
 
-    private static com.moresby.have.domain.Story parseStory(final String storyName, final InputStream storyIs) throws MByHaveException, IOException {
+    private static org.moresbycoffee.have.domain.Story parseStory(final String storyName, final InputStream storyIs) throws MByHaveException, IOException {
         final InputStreamReader isReader = new InputStreamReader(storyIs);
         final BufferedReader    reader   = new BufferedReader(isReader);
 
@@ -358,7 +358,7 @@ public class MByHaveRunner extends Runner {
         if (storyBuilder != null) {
             scenarios.add(parseScenario(storyBuilder.toString()));
         }
-        return new com.moresby.have.domain.Story(storyName, scenarios);
+        return new org.moresbycoffee.have.domain.Story(storyName, scenarios);
     }
 
     private static Scenario parseScenario(final String scenario) throws MByHaveException {
@@ -633,7 +633,7 @@ public class MByHaveRunner extends Runner {
         storyDescriptions = new ArrayList<StoryDescription>();
         mainDescription   = Description.createSuiteDescription(testClass.getName());
 
-        for (final com.moresby.have.domain.Story story : stories) {
+        for (final org.moresbycoffee.have.domain.Story story : stories) {
 
             final Description storyDescription = Description.createSuiteDescription(++storyIndex + ". " + story.getName().replace("\n", " "));
             final List<ScenarioDescription> scenarioDescriptions = new ArrayList<ScenarioDescription>();

@@ -28,37 +28,23 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.have;
+package org.moresbycoffee.have.annotations;
 
-import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Represents a step keyword. This keyword can be used as an annotation and 
- * as a step description keyword as well.
+ * Annotation for the Then step definition keyword.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class StepKeyword {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Then {
 
-    private final Class<? extends Annotation> annotation;
-    private final String                      keyword;
-
-    /**
-     * @param annotation The annotation used as step definition
-     * @param keyword The keyword used in step description
-     */
-    public StepKeyword(final Class<? extends Annotation> annotation, final String keyword) {
-        super();
-        this.annotation = annotation;
-        this.keyword    = keyword;
-    }
-
-    public Class<? extends Annotation> getAnnotation() {
-        return annotation;
-    }
-    public String getKeyword() {
-        return keyword;
-    }
+    String definition();
 
 }

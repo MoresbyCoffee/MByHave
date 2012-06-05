@@ -28,50 +28,23 @@
  * of the authors and should not be interpreted as representing official policies,
  * either expressed or implied, of the FreeBSD Project.
  */
-package com.moresby.have;
+package org.moresbycoffee.have.annotations;
 
-import static org.junit.Assert.*;
-
-import java.util.logging.Logger;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import com.moresby.have.annotations.Given;
-import com.moresby.have.annotations.Story;
-import com.moresby.have.annotations.Then;
-import com.moresby.have.annotations.When;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * TODO javadoc.
+ * Annotation for the When step definition keyword.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-@RunWith(MByHaveRunner.class)
-@Story(files = "storytest1.story")
-public class Story1Test {
-	
-	/** Logger. */
-	private static final Logger LOG = Logger.getLogger(Story1Test.class.getName());
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface When {
 
-    @Test
-    public void test() {
-        fail("This test should not run.");
-    }
+    String definition();
 
-    @Given(definition = "first method")
-    public void firstMethod() {
-        LOG.info("First out");
-    }
-
-    @When(definition = "second method $param")
-    public void whenTestMethod(final String param) {
-    	LOG.info("When test method: " + param);
-    }
-
-    @Then(definition = "third $param1 $param2 method")
-    public void thenTwoParamMethod(final String param1, final String param2) {
-    	LOG.info("Then test param1: " + param1 + " param2: " + param2);
-    }
 }

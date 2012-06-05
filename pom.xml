@@ -2,13 +2,22 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.moresby</groupId>
+	<groupId>org.moresbycoffee</groupId>
 	<artifactId>have</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0-ALPHA</version>
 	<packaging>jar</packaging>
 
-	<name>have</name>
-	<url>http://maven.apache.org</url>
+	<name>mBy.have</name>
+	
+	<url>http://moresbycoffee.blogspot.co.uk/</url>
+	<description>Behaviour Driven Development JUnit plugin.</description>
+	<organization>
+		<name>Moresby Coffee</name>
+		<url>http://moresbycoffee.org</url>
+	</organization>
+	<scm>
+		<url>https://github.com/bsudy/mBy.have.git</url>
+	</scm>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
