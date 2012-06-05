@@ -57,6 +57,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>${name}-${version}</finalName>
 		<testResources>
 			<testResource>
 				<directory>${project.basedir}/src/test/java</directory>
