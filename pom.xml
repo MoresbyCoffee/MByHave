@@ -28,6 +28,13 @@
 		<url>https://github.com/bsudy/mBy.have</url>
 		<connection>scm:git:git://github.com/bsudy/mBy.have.git</connection>
 	</scm>
+	
+	<developers>
+		<developer>
+			<name>Barnabas Sudy</name>
+			<email>barnabas.sudy@gmail.com</email>
+		</developer>
+	</developers>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
