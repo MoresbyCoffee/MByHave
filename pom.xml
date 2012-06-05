@@ -8,15 +8,25 @@
 	<packaging>jar</packaging>
 
 	<name>mBy.have</name>
-	
+
 	<url>http://moresbycoffee.blogspot.co.uk/</url>
 	<description>Behaviour Driven Development JUnit plugin.</description>
 	<organization>
 		<name>Moresby Coffee</name>
 		<url>http://moresbycoffee.org</url>
 	</organization>
+
+	<licenses>
+		<license>
+			<name>BSD 3-Clause License</name>
+			<url>http://www.opensource.org/licenses/BSD-3-Clause</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
 	<scm>
-		<url>https://github.com/bsudy/mBy.have.git</url>
+		<url>https://github.com/bsudy/mBy.have</url>
+		<connection>scm:git:git://github.com/bsudy/mBy.have.git</connection>
 	</scm>
 
 	<properties>

@@ -6,27 +6,25 @@
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the <organization> nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * The views and conclusions contained in the software and documentation are those
- * of the authors and should not be interpreted as representing official policies,
- * either expressed or implied, of the FreeBSD Project.
  */
 package org.moresbycoffee.have;
 
@@ -88,18 +86,18 @@ import com.thoughtworks.paranamer.Paranamer;
  * <li>{@link Then} for the then steps.</li>
  * </ul>
  * <p>Each annotation takes a value, which is a pattern by which the steps will be tried
- * being matched. The patterns has to contain the placeholders of the method parameters. 
+ * being matched. The patterns has to contain the placeholders of the method parameters.
  * The placeholder syntax is: <strong><tt>$paramname</tt></strong>.</p>
  * <p>The pattern matching will match the step description and the method (defined by the
  * step definition) with the parameters. To pick up the parameter values, a reqEx pattern
- * will be used with <tt>(.*)</tt> pattern at the parameter placeholders. The matcher 
- * will work in - called - greedy mode so it will pick up the longest possible string 
+ * will be used with <tt>(.*)</tt> pattern at the parameter placeholders. The matcher
+ * will work in - called - greedy mode so it will pick up the longest possible string
  * from the step description.</p>
- * <p>To learn more about pattern matching visit the official Java site: 
+ * <p>To learn more about pattern matching visit the official Java site:
  * <a href="http://docs.oracle.com/javase/tutorial/essential/regex/">http://docs.oracle.com/javase/tutorial/essential/regex/</a></p>
  * <h4>How to use</h4>
- * <p>To use the MByHaveRunner the test class has to contain one or more annotated step 
- * definition methods. The step definitions has to contain placeholder for each method 
+ * <p>To use the MByHaveRunner the test class has to contain one or more annotated step
+ * definition methods. The step definitions has to contain placeholder for each method
  * parameter. The method parameter has to be {@link java.lang.String}. The test class has
  * to be annotated with {@link org.junit.runner.RunWith} - added this class as parameter -
  * and with {@link Story} - added the story files as parameter.
@@ -110,7 +108,7 @@ import com.thoughtworks.paranamer.Paranamer;
  *    &#064;RunWith(MByHaveRunner.class)
  *    &#064;Story(files = "storytest1.story")
  *    public class Story1Test {
- *	
+ *
  *
  *        &#064;Given(definition = "first method")
  *        public void firstMethod() {
@@ -131,12 +129,12 @@ import com.thoughtworks.paranamer.Paranamer;
  * <h5>storytest1.story story file</h5>
  * <pre>
  * #This is a comment
- * 
+ *
  * Scenario show how this works
  * Given first method
  * When second method <strong>param1</strong>
  * Then third <strong>param1</strong> <strong>param2</strong> method
- * 
+ *
  * Scenario second scenario
  * Given first method
  * When second method <strong>trick</strong>
@@ -148,7 +146,7 @@ import com.thoughtworks.paranamer.Paranamer;
  * <li>more javadoc</li>
  * <li>code cleanup - split up MByHaveRunner.</li>
  * </ul>
- * 
+ *
  * <h5>v1.1</h5>
  * <ul>
  * <li>auto parameter type conversion</li>
@@ -167,7 +165,7 @@ import com.thoughtworks.paranamer.Paranamer;
  * @since 2012
  */
 public class MByHaveRunner extends Runner {
-	
+
 	/** Logger. */
 	private static Logger LOG = Logger.getLogger(MByHaveRunner.class.getName());
 
@@ -455,10 +453,10 @@ public class MByHaveRunner extends Runner {
      * Finds and initializes the step candidates.
      * This method looks for the <tt>annotated</tt> methods in the <tt>testClass</tt> and adds the found
      * methods as {@link StepCandidate}s to the <tt>stepCandidatesList</tt>
-     *  
+     *
      * @param annotation The annotation the method is looking for.
      * @param testClass The class the method is scanning for annotated methods.
-     * @param stepCandidatesList The list to which the annotated methods will be added as {@link StepCandidate}s. 
+     * @param stepCandidatesList The list to which the annotated methods will be added as {@link StepCandidate}s.
      */
     private static <T extends Annotation> void initStepCandidates(final Class<T> annotation, final Class<?> testClass, final List<StepCandidate> stepCandidatesList) {
     	LOG.info("Init candidates");
@@ -538,7 +536,7 @@ public class MByHaveRunner extends Runner {
     }
 
     private void runCandidate(final Object testObject, final StepCandidate candidate, final Matcher matcher, final String step) throws MByHaveException {
-        
+
     	LOG.fine("Run stepCandiate: " + candidate.getStepDefinition());
     	final Map<Integer, MethodParameter> positions = candidate.getParameterPositions();
         int i = 1;
@@ -602,13 +600,13 @@ public class MByHaveRunner extends Runner {
 
     private void processStep(final Object testObject, final String step) throws MByHaveException {
         LOG.info("Process step: " + step);
-        
+
         for (final StepKeyword keyword : keywords.values()) {
             if (step.startsWith(keyword.getKeyword())) {
-            	
+
             	/* Gets rid of the keyword and the leading and trailing whitespace. */
             	final String trimmedStep = step.substring(keyword.getKeyword().length()).trim();
-            	
+
                 runStep(testObject, trimmedStep, candidates.get(keyword.getAnnotation()));
                 return;
             }
