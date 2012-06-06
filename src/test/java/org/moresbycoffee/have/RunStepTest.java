@@ -48,23 +48,23 @@ public class RunStepTest {
     private String  oneParamParam = null;
     private boolean regExpGiven   = false;
 
-    @Given(definition = " a no param given method")
+    @Given(" a no param given method")
     public void noParamGiven() {
         this.noParamGiven = true;
     }
 
-    @Given(definition = "one parameter $parameter")
+    @Given("one parameter $parameter")
     public void oneParamGiven(final String parameter) {
         this.oneParamGiven = true;
         this.oneParamParam = parameter;
     }
 
-    @Given(definition = "test fail")
+    @Given("test fail")
     public void testFail() {
         fail("This is a test. It have had to happen.");
     }
 
-    @Given(definition = "(.*) pattern")
+    @Given("(.*) pattern")
     public void regExPatternTest() {
         this.regExpGiven = true;
     }
@@ -121,7 +121,7 @@ public class RunStepTest {
     private String  secondTwoParamGivenMethodParam1 = null;
     private String  secondTwoParamGivenMethodParam2 = null;
 
-    @Given(definition = "given text $firstParam $secondParam blah blah")
+    @Given("given text $firstParam $secondParam blah blah")
     public void twoParamGivenMethod(final String firstParam, final String secondParam) {
         this.twoParamGivenMethodParam1 = firstParam;
         this.twoParamGivenMethodParam2 = secondParam;
@@ -130,7 +130,7 @@ public class RunStepTest {
 
     }
 
-    @Given(definition = "second text $firstParam $secondParam")
+    @Given("second text $firstParam $secondParam")
     public void secondTwoParamGivenMethod(final String firstParam, final String secondParam) {
         this.secondTwoParamGivenMethodParam1 = firstParam;
         this.secondTwoParamGivenMethodParam2 = secondParam;

@@ -432,17 +432,17 @@ public class MByHaveRunner extends Runner {
         if (annotation == Given.class) {
             if (method.isAnnotationPresent(Given.class)) {
                 final Given given = method.getAnnotation(Given.class);
-                return given.definition();
+                return given.value();
             }
         } else if (annotation == When.class) {
             if (method.isAnnotationPresent(When.class)) {
                 final When when = method.getAnnotation(When.class);
-                return when.definition();
+                return when.value();
             }
         } else if (annotation == Then.class) {
             if (method.isAnnotationPresent(Then.class)) {
                 final Then then = method.getAnnotation(Then.class);
-                return then.definition();
+                return then.value();
             }
         }
         return null;
