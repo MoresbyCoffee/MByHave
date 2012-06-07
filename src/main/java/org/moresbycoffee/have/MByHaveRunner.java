@@ -36,6 +36,7 @@ import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,6 +51,10 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
@@ -189,6 +194,11 @@ public class MByHaveRunner extends Runner {
     private final List<org.moresbycoffee.have.domain.Story> stories;
     private final Class<?> testClass;
 
+    private List<Method> beforeClassMethods;
+    private List<Method> beforeMethods;
+    private List<Method> afterMethods;
+    private List<Method> afterClassMethods;
+
 //> CONSTRUCTORS
 
     public MByHaveRunner(final Class<?> testClass) throws MByHaveException, InitializationError {
@@ -201,14 +211,38 @@ public class MByHaveRunner extends Runner {
         initStepCandidates(testClass);
 
         if (parseStoryFiles) {
+
+            beforeClassMethods = getAnnotatedMethods(testClass, BeforeClass.class, true );
+            beforeMethods      = getAnnotatedMethods(testClass, Before.class,      false);
+            afterMethods       = getAnnotatedMethods(testClass, After.class,       false);
+            afterClassMethods  = getAnnotatedMethods(testClass, AfterClass.class,  true );
+
             stories = parseStories(testClass);
             if (stories.isEmpty()) {
                 throw new InitializationError("No runnable test in this class.");
             }
         } else {
+            beforeClassMethods = Collections.emptyList();
+            beforeMethods      = Collections.emptyList();
+            afterMethods       = Collections.emptyList();
+            afterClassMethods  = Collections.emptyList();
+
             stories = Collections.emptyList();
         }
 
+    }
+
+    private static List<Method> getAnnotatedMethods(final Class<?> testClass, final Class<? extends Annotation> annotation, final boolean isStatic) {
+        final List<Method> methods = new ArrayList<Method>();
+        for (final Method method : testClass.getDeclaredMethods()) {
+            if (method.isAnnotationPresent(annotation)) {
+                if (isStatic != Modifier.isStatic(method.getModifiers())) {
+                    throw new IllegalArgumentException("The " + annotation + " should be applied on " + (isStatic ? "static" : "non static") + " method.");
+                }
+                methods.add(method);
+            }
+        }
+        return methods;
     }
 
 //> PACKAGE PRIVATE METHODS
@@ -558,8 +592,19 @@ public class MByHaveRunner extends Runner {
 
         LOG.finer("Num of params: " + candidate.getMethod().getParameterTypes().length);
 
+        invokeMethod(candidate.getMethod(), testObject, methodParameters.values().toArray());
+
+    }
+
+    private void invokeMethods(final Collection<Method> methods, final Object target) {
+        for (final Method method : methods) {
+            invokeMethod(method, target);
+        }
+    }
+
+    private void invokeMethod(final Method method, final Object target, final Object... parameters) {
         try {
-            candidate.getMethod().invoke(testObject, methodParameters.values().toArray());
+            method.invoke(target, parameters);
         } catch (final IllegalArgumentException e) {
             throw new MByHaveException("The parameters could not be matched.", e);
         } catch (final IllegalAccessException e) {
@@ -570,7 +615,6 @@ public class MByHaveRunner extends Runner {
             }
             throw new MByHaveException(e);
         }
-
     }
 
 
@@ -661,14 +705,16 @@ public class MByHaveRunner extends Runner {
     @Override
     public void run(final RunNotifier notifier) {
         notifier.fireTestStarted(mainDescription);
+
         try {
+            invokeMethods(beforeClassMethods, null);
             for (final StoryDescription storyDescription : storyDescriptions) {
                 notifier.fireTestStarted(storyDescription.getDescription());
                 for (final ScenarioDescription scenarioDescription : storyDescription.getScenarios()) {
                     notifier.fireTestStarted(scenarioDescription.getDescription());
 
                     final Object testObject = testClass.newInstance();
-
+                    invokeMethods(beforeMethods, testObject);
                     for (final StepDescription stepDescription : scenarioDescription.getSteps()) {
                         notifier.fireTestStarted(stepDescription.getDescription());
 
@@ -681,10 +727,12 @@ public class MByHaveRunner extends Runner {
 
                         notifier.fireTestFinished(stepDescription.getDescription());
                     }
+                    invokeMethods(afterMethods, testObject);
                     notifier.fireTestFinished(scenarioDescription.getDescription());
                 }
                 notifier.fireTestFinished(storyDescription.getDescription());
             }
+            invokeMethods(afterClassMethods, null);
         } catch (final Throwable t) {
             notifier.fireTestFailure(new Failure(mainDescription, t));
         }
