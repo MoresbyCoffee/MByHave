@@ -47,29 +47,29 @@ import org.moresbycoffee.have.exceptions.MByHaveException;
  * {@link #then(String)} methods or as a long string combining the Given, When
  * and Then steps and passed to the {@link #runScenario(String)}.</p>
  * <p>Definition example:</p>
- * <pre>{@code
- *   @Given("first method")
+ * <pre>
+ *   &#64;Given("first method")
  *   public void given() {
  *       ...
  *   }
  *
- *   @When("second method $parameter")
+ *   &#64;When("second method $parameter")
  *   public void when(final String parameter) {
  *       ...
  *   }
  *
- *   @Then("third method with $parameter1 and $parameter2 ")
+ *   &#64;Then("third method with $parameter1 and $parameter2 ")
  *   public void then(final String parameter1, final String parameter2) {
  *       ...
  *   }
  *
  *
- * }</pre>
+ * </pre>
  * <p>Example using {@link #given(String)}, {@link #when(String)} and
  * {@link #then(String)} methods:</p>
- * <pre>{@code
+ * <pre>
  *
- *    \@Test
+ *    &#64;Test
  *    public void runGivenWhenThenWithMethods() {
  *        new mByHave(this).given("first method").
  *                          when("second method when parameter").
@@ -77,13 +77,13 @@ import org.moresbycoffee.have.exceptions.MByHaveException;
  *        ... assertions ...
  *
  *    }
- * }</pre>
+ * </pre>
  *
  * <p>Example using {@link #runScenario(String)}:</p>
  *
- * <pre>{@code
+ * <pre>
  *
- *    \@Test
+ *    &#64;Test
  *    public void runGivenWhenThenWithMethods() {
  *        new mByHave(this).runScenario("Given first method\n" +
  *                                      "When second method when parameter\n" +
@@ -91,7 +91,7 @@ import org.moresbycoffee.have.exceptions.MByHaveException;
  *        ... assertions ...
  *
  *    }
- * }</pre>
+ * </pre>
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012

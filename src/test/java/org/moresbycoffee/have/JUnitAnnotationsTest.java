@@ -39,7 +39,10 @@ import org.moresbycoffee.have.annotations.Story;
 import org.moresbycoffee.have.annotations.Then;
 
 /**
- * Tests the junit annotations. (@Before, @After, @BeforeClass and @AfterClass)
+ * Tests the JUnit annotations. ({@link org.junit.Before &#64;Before},
+ * {@link org.junit.After &#64;After},
+ * {@link org.junit.BeforeClass &#64;BeforeClass} and
+ * {@link org.junit.AfterClass &#64;AfterClass})
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
