@@ -41,7 +41,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -51,10 +50,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.Failure;
@@ -82,7 +77,7 @@ import com.thoughtworks.paranamer.Paranamer;
  * real logic of the test and they have three form: <strong>given</strong>,
  * <strong>when</strong> and <strong>then</strong>. These step types ought to be used
  * in this order (given, when, then) but there is not strict restriction. The behavior of
- * them also the same only the Given, When, Then keywords are different.</p>
+ * them also the same only the Given, When, Then configuration.getKeywords() are different.</p>
  * <p>The steps in a scenario will be parsed and tired to be matched to an annotated
  * method from the test class. There is one-one annotation for each step type:</p>
  * <ul>
@@ -174,30 +169,9 @@ public class MByHaveRunner extends Runner {
 	/** Logger. */
 	private static Logger LOG = Logger.getLogger(MByHaveRunner.class.getName());
 
-    private final Map<Class<? extends Annotation>, StepKeyword>         keywords;
-    private final Map<Class<? extends Annotation>, List<StepCandidate>> candidates;
-    {
-        final Map<Class<? extends Annotation>, StepKeyword> mutableKeywords = new HashMap<Class<? extends Annotation>, StepKeyword>();
-        mutableKeywords.put(Given.class, new StepKeyword(Given.class, "Given"));
-        mutableKeywords.put(When.class,  new StepKeyword(When.class,  "When" ));
-        mutableKeywords.put(Then.class,  new StepKeyword(Then.class,  "Then" ));
-        keywords = Collections.unmodifiableMap(mutableKeywords);
-
-        final Map<Class<? extends Annotation>, List<StepCandidate>> mutableCandidates = new HashMap<Class<? extends Annotation>, List<StepCandidate>>();
-        for (final Class<? extends Annotation> annotation : keywords.keySet()) {
-            mutableCandidates.put(annotation, new ArrayList<StepCandidate>());
-        }
-
-        candidates = Collections.unmodifiableMap(mutableCandidates);
-    }
+	private final MByHaveConfiguration configuration;
 
     private final List<org.moresbycoffee.have.domain.Story> stories;
-    private final Class<?> testClass;
-
-    private List<Method> beforeClassMethods;
-    private List<Method> beforeMethods;
-    private List<Method> afterMethods;
-    private List<Method> afterClassMethods;
 
 //> CONSTRUCTORS
 
@@ -207,56 +181,32 @@ public class MByHaveRunner extends Runner {
 
     MByHaveRunner(final Class<?> testClass, final boolean parseStoryFiles) throws MByHaveException, InitializationError {
 
-        this.testClass = testClass;
-        initStepCandidates(testClass);
+        configuration = MByHaveConfigurator.configure(testClass, parseStoryFiles);
 
         if (parseStoryFiles) {
-
-            beforeClassMethods = getAnnotatedMethods(testClass, BeforeClass.class, true );
-            beforeMethods      = getAnnotatedMethods(testClass, Before.class,      false);
-            afterMethods       = getAnnotatedMethods(testClass, After.class,       false);
-            afterClassMethods  = getAnnotatedMethods(testClass, AfterClass.class,  true );
 
             stories = parseStories(testClass);
             if (stories.isEmpty()) {
                 throw new InitializationError("No runnable test in this class.");
             }
         } else {
-            beforeClassMethods = Collections.emptyList();
-            beforeMethods      = Collections.emptyList();
-            afterMethods       = Collections.emptyList();
-            afterClassMethods  = Collections.emptyList();
-
             stories = Collections.emptyList();
         }
-
     }
 
-    private static List<Method> getAnnotatedMethods(final Class<?> testClass, final Class<? extends Annotation> annotation, final boolean isStatic) {
-        final List<Method> methods = new ArrayList<Method>();
-        for (final Method method : testClass.getDeclaredMethods()) {
-            if (method.isAnnotationPresent(annotation)) {
-                if (isStatic != Modifier.isStatic(method.getModifiers())) {
-                    throw new IllegalArgumentException("The " + annotation + " should be applied on " + (isStatic ? "static" : "non static") + " method.");
-                }
-                methods.add(method);
-            }
-        }
-        return methods;
-    }
 
 //> PACKAGE PRIVATE METHODS
 
     void given(final Object testObject, final String given) throws MByHaveException {
-        runStep(testObject, given, candidates.get(Given.class));
+        runStep(testObject, given, configuration.getCandidates().get(Given.class));
     }
 
     void when(final Object testObject, final String when) throws MByHaveException {
-        runStep(testObject, when, candidates.get(When.class));
+        runStep(testObject, when, configuration.getCandidates().get(When.class));
     }
 
     void then(final Object testObject, final String then) throws MByHaveException {
-        runStep(testObject, then, candidates.get(Then.class));
+        runStep(testObject, then, configuration.getCandidates().get(Then.class));
     }
 
     void runScenario(final Object testObject, final String scenario) throws MByHaveException {
@@ -284,11 +234,11 @@ public class MByHaveRunner extends Runner {
 
     /**
      * Loads a resource from the jar. The resource can be in the <tt>root</tt> or
-     * in the package of the testClass. It tries to load by the testClass's
+     * in the package of the configuration.getTestClass(). It tries to load by the configuration.getTestClass()'s
      * ClassLoader, this runner's ClassLoader and the System testLoader as well.
      *
      * @param storyFile The name of the story file.
-     * @param testClass The testClass.
+     * @param configuration.getTestClass() The configuration.getTestClass().
      * @return The InputStream of the story file.
      * @throws MByHaveException If the file is not found.
      */
@@ -456,119 +406,6 @@ public class MByHaveRunner extends Runner {
         return new Scenario(scenarioDescription, steps);
     }
 
-    private void initStepCandidates(final Class<?> testClass) {
-        for (final Map.Entry<Class<? extends Annotation>, List<StepCandidate>> candidate : candidates.entrySet()) {
-            initStepCandidates(candidate.getKey(), testClass, candidate.getValue());
-        }
-    }
-
-    private static <T extends Annotation> String getAnnotationValue(final Class<T> annotation, final Method method) {
-        if (annotation == Given.class) {
-            if (method.isAnnotationPresent(Given.class)) {
-                final Given given = method.getAnnotation(Given.class);
-                return given.value();
-            }
-        } else if (annotation == When.class) {
-            if (method.isAnnotationPresent(When.class)) {
-                final When when = method.getAnnotation(When.class);
-                return when.value();
-            }
-        } else if (annotation == Then.class) {
-            if (method.isAnnotationPresent(Then.class)) {
-                final Then then = method.getAnnotation(Then.class);
-                return then.value();
-            }
-        }
-        return null;
-    }
-
-
-    /**
-     * Finds and initializes the step candidates.
-     * This method looks for the <tt>annotated</tt> methods in the <tt>testClass</tt> and adds the found
-     * methods as {@link StepCandidate}s to the <tt>stepCandidatesList</tt>
-     *
-     * @param annotation The annotation the method is looking for.
-     * @param testClass The class the method is scanning for annotated methods.
-     * @param stepCandidatesList The list to which the annotated methods will be added as {@link StepCandidate}s.
-     */
-    private static <T extends Annotation> void initStepCandidates(final Class<T> annotation, final Class<?> testClass, final List<StepCandidate> stepCandidatesList) {
-    	LOG.info("Init candidates");
-        for (final Method method : testClass.getDeclaredMethods()) {
-            final String definitionValue = getAnnotationValue(annotation, method);
-            if (definitionValue != null) {
-                LOG.finer("Step definition: " + definitionValue);
-
-                /* Retrieves the method parameters. */
-                final String[] params = getParameters(method);
-                /* Finds the parameters in the step definition string. */
-                final Map<Integer, MethodParameter> parameterPositions = findParameterPositions(params, definitionValue);
-
-                /* Logs the method parameters. */
-                if (LOG.isLoggable(Level.FINER)) {
-	                for (final Map.Entry<Integer, MethodParameter> paramPos : parameterPositions.entrySet()) {
-	                    LOG.finer("Position: " + paramPos.getKey() + " Param: " + paramPos.getValue().getParamName());
-	                }
-                }
-                final String regEx = createRegEx(definitionValue, Arrays.asList(params));
-
-                LOG.finer("RegEx: " + regEx);
-
-                stepCandidatesList.add(new StepCandidate(definitionValue, method, parameterPositions, regEx));
-
-            }
-        }
-    }
-
-    private static String[] getParameters(final Method method) {
-        final Paranamer paranamer = new CachingParanamer(new BytecodeReadingParanamer());
-        final String[] params = paranamer.lookupParameterNames(method, false);
-        return params;
-    }
-
-    public static Map<Integer, MethodParameter> findParameterPositions(final String[] paramNames, final String stepValue) {
-
-        final Map<Integer, MethodParameter> result = new TreeMap<Integer, MethodParameter>();
-        if (paramNames != null) {
-            for (int i = 0; i < paramNames.length; i++) {
-
-                final String paramName        = paramNames[i];
-                final String paramPlaceHolder = getPlaceholderPattern(paramName);
-                final int    posInStepPattern = stepValue.indexOf(paramPlaceHolder);
-
-                LOG.fine("Parameter: " + paramName);
-                LOG.fine("Position:  " + posInStepPattern);
-
-                /* Check there is only one appearance in the stepPattern. */
-                if (posInStepPattern < 0) {
-                    throw new MByHaveException("The pattern does not contain placeholder for the " + paramName + " parameter.");
-                }
-                if (stepValue.indexOf(paramPlaceHolder, posInStepPattern + paramName.length()) >= 0) {
-                    throw new MByHaveException("The pattern does contain more than one placeholder for the " + paramName + " parameter");
-                }
-
-                /* Add to the map. */
-                result.put(Integer.valueOf(posInStepPattern), new MethodParameter(paramName, i));
-            }
-        }
-
-        return result;
-    }
-
-    private static String getPlaceholderPattern(final String paramName) {
-        return "$" + paramName;
-    }
-
-    private static String createRegEx(final String stepValue, final Collection<String> paramNames) {
-        String regEx = Pattern.quote(stepValue);
-
-        for (final String paramName : paramNames) {
-            final String paramPlaceHolder = getPlaceholderPattern(paramName);
-            regEx = regEx.replace(paramPlaceHolder, "\\E(.*)\\Q");
-        }
-        return '^' + regEx + '$';
-    }
-
     private void runCandidate(final Object testObject, final StepCandidate candidate, final Matcher matcher, final String step) throws MByHaveException {
 
     	LOG.fine("Run stepCandiate: " + candidate.getStepDefinition());
@@ -645,13 +482,13 @@ public class MByHaveRunner extends Runner {
     private void processStep(final Object testObject, final String step) throws MByHaveException {
         LOG.info("Process step: " + step);
 
-        for (final StepKeyword keyword : keywords.values()) {
+        for (final StepKeyword keyword : configuration.getKeywords().values()) {
             if (step.startsWith(keyword.getKeyword())) {
 
             	/* Gets rid of the keyword and the leading and trailing whitespace. */
             	final String trimmedStep = step.substring(keyword.getKeyword().length()).trim();
 
-                runStep(testObject, trimmedStep, candidates.get(keyword.getAnnotation()));
+                runStep(testObject, trimmedStep, configuration.getCandidates().get(keyword.getAnnotation()));
                 return;
             }
         }
@@ -673,7 +510,7 @@ public class MByHaveRunner extends Runner {
 
         int storyIndex = 0;
         storyDescriptions = new ArrayList<StoryDescription>();
-        mainDescription   = Description.createSuiteDescription(testClass.getName());
+        mainDescription   = Description.createSuiteDescription(configuration.getTestClass().getName());
 
         for (final org.moresbycoffee.have.domain.Story story : stories) {
 
@@ -686,7 +523,7 @@ public class MByHaveRunner extends Runner {
                 final List<StepDescription> stepDescriptions = new ArrayList<StepDescription>();
                 int stepIndex = 0;
                 for (final String step : scenario.getSteps()) {
-                    final Description stepDescription = Description.createTestDescription(testClass, storyIndex + "." + scenarioIndex + "." + (++stepIndex) + ". " + step.replace("\n", " "));
+                    final Description stepDescription = Description.createTestDescription(configuration.getTestClass(), storyIndex + "." + scenarioIndex + "." + (++stepIndex) + ". " + step.replace("\n", " "));
                     stepDescriptions.add(new StepDescription(step, stepDescription));
                     scenarioDescription.addChild(stepDescription);
                 }
@@ -707,14 +544,14 @@ public class MByHaveRunner extends Runner {
         notifier.fireTestStarted(mainDescription);
 
         try {
-            invokeMethods(beforeClassMethods, null);
+            invokeMethods(configuration.getBeforeClassMethods(), null);
             for (final StoryDescription storyDescription : storyDescriptions) {
                 notifier.fireTestStarted(storyDescription.getDescription());
                 for (final ScenarioDescription scenarioDescription : storyDescription.getScenarios()) {
                     notifier.fireTestStarted(scenarioDescription.getDescription());
 
-                    final Object testObject = testClass.newInstance();
-                    invokeMethods(beforeMethods, testObject);
+                    final Object testObject = configuration.getTestClass().newInstance();
+                    invokeMethods(configuration.getBeforeMethods(), testObject);
                     for (final StepDescription stepDescription : scenarioDescription.getSteps()) {
                         notifier.fireTestStarted(stepDescription.getDescription());
 
@@ -727,12 +564,12 @@ public class MByHaveRunner extends Runner {
 
                         notifier.fireTestFinished(stepDescription.getDescription());
                     }
-                    invokeMethods(afterMethods, testObject);
+                    invokeMethods(configuration.getAfterMethods(), testObject);
                     notifier.fireTestFinished(scenarioDescription.getDescription());
                 }
                 notifier.fireTestFinished(storyDescription.getDescription());
             }
-            invokeMethods(afterClassMethods, null);
+            invokeMethods(configuration.getAfterClassMethods(), null);
         } catch (final Throwable t) {
             notifier.fireTestFailure(new Failure(mainDescription, t));
         }
