@@ -58,28 +58,37 @@ import com.thoughtworks.paranamer.CachingParanamer;
 import com.thoughtworks.paranamer.Paranamer;
 
 /**
- * TODO javadoc.
+ * Utility class to create {@link MByHaveConfiguration configuration} for {@link MByHaveRunner}.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class MByHaveConfigurator {
+public final class MByHaveConfigurator {
 
     /** Logger. */
-    private static Logger LOG = Logger.getLogger(MByHaveRunner.class.getName());
+    private static final Logger LOG = Logger.getLogger(MByHaveRunner.class.getName());
 
-    private static final Map<Class<? extends Annotation>, StepKeyword>         keywords;
+    private static final Map<Class<? extends Annotation>, StepKeyword>         KEYWORDS;
 
     static {
         final Map<Class<? extends Annotation>, StepKeyword> mutableKeywords = new HashMap<Class<? extends Annotation>, StepKeyword>();
         mutableKeywords.put(Given.class, new StepKeyword(Given.class, "Given"));
         mutableKeywords.put(When.class,  new StepKeyword(When.class,  "When" ));
         mutableKeywords.put(Then.class,  new StepKeyword(Then.class,  "Then" ));
-        keywords = Collections.unmodifiableMap(mutableKeywords);
+        KEYWORDS = Collections.unmodifiableMap(mutableKeywords);
 
     }
 
-    public static MByHaveConfiguration configure(final Class<?> testClass, final boolean parseStoryFiles) {
+    /**
+     * Creates a {@link MByHaveConfiguration configuration} by the given testClass. This methos scans the
+     * testClass for keyword annotated methods and if the parseJUnitAnnotations is true it will scan for the
+     * JUnit {@link BeforeClass}, {@link Before}, {@link After} and {@link AfterClass} annotations.
+     *
+     * @param testClass The testclass to scan
+     * @param parseJUnitAnnotations If it is <tt>true</tt> than JUnit annotated methods also will be picked up.
+     * @return The configuration.
+     */
+    public static MByHaveConfiguration configure(final Class<?> testClass, final boolean parseJUnitAnnotations) {
 
         final Map<Class<? extends Annotation>, List<StepCandidate>> candidates;
 
@@ -89,7 +98,7 @@ public class MByHaveConfigurator {
         final List<Method> beforeMethods;
         final List<Method> afterMethods;
         final List<Method> afterClassMethods;
-        if (parseStoryFiles) {
+        if (parseJUnitAnnotations) {
             beforeClassMethods = getAnnotatedMethods(testClass, BeforeClass.class, true );
             beforeMethods      = getAnnotatedMethods(testClass, Before.class,      false);
             afterMethods       = getAnnotatedMethods(testClass, After.class,       false);
@@ -102,12 +111,18 @@ public class MByHaveConfigurator {
         }
 
 
-        return new MByHaveConfiguration(keywords, candidates, testClass, beforeClassMethods, beforeMethods, afterMethods, afterClassMethods);
+        return new MByHaveConfiguration(KEYWORDS, candidates, testClass, beforeClassMethods, beforeMethods, afterMethods, afterClassMethods);
     }
 
+    /**
+     * Scans for the step candidates.
+     *
+     * @param testClass The test class.
+     * @return The found stepcandidates in a map of keyword, stepcandidate list pairs.
+     */
     private static Map<Class<? extends Annotation>, List<StepCandidate>> initStepCandidates(final Class<?> testClass) {
         final Map<Class<? extends Annotation>, List<StepCandidate>> mutableCandidates = new HashMap<Class<? extends Annotation>, List<StepCandidate>>();
-        for (final Class<? extends Annotation> annotation : keywords.keySet()) {
+        for (final Class<? extends Annotation> annotation : KEYWORDS.keySet()) {
             mutableCandidates.put(annotation, initStepCandidates(annotation, testClass));
         }
         return Collections.unmodifiableMap(mutableCandidates);
@@ -119,9 +134,10 @@ public class MByHaveConfigurator {
      * This method looks for the <tt>annotated</tt> methods in the <tt>testClass</tt> and adds the found
      * methods as {@link StepCandidate}s to the <tt>stepCandidatesList</tt>
      *
+     * @param <T> The type of the annotations
      * @param annotation The annotation the method is looking for.
      * @param testClass The class the method is scanning for annotated methods.
-     * @param stepCandidatesList The list to which the annotated methods will be added as {@link StepCandidate}s.
+     * @return The list to which the annotated methods will be added as {@link StepCandidate}s.
      */
     private static <T extends Annotation> List<StepCandidate> initStepCandidates(final Class<T> annotation, final Class<?> testClass) {
         final List<StepCandidate> stepCandidatesList = new ArrayList<StepCandidate>();
@@ -235,5 +251,9 @@ public class MByHaveConfigurator {
         return methods;
     }
 
+    /** Hidden constructor of utiltity class. */
+    private MByHaveConfigurator() {
+        /* NOP */
+    }
 
 }

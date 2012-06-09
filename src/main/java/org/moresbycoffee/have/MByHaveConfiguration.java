@@ -34,7 +34,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * TODO javadoc.
+ * Representes a MByHave test configuration. A configuration consists of the
+ * the {@link StepCandidate candidate}s (methods annotated with keywords),
+ * the {@link StepKeyword keyword}s, the test class and if it is necessary it also
+ * contains the list of the {@link org.junit.Before}, {@link org.junit.BeforeClass},
+ * {@link org.junit.After} and {@link org.junit.AfterClass} annotated methods.
+ * The JUnit annotated methods has to be stored when the MByHave is used as a
+ * JUnitRunner.
  *
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
@@ -43,6 +49,7 @@ public class MByHaveConfiguration {
 
     private final Map<Class<? extends Annotation>, StepKeyword>         keywords;
     private final Map<Class<? extends Annotation>, List<StepCandidate>> candidates;
+
     private final Class<?> testClass;
 
     private final List<Method> beforeClassMethods;
@@ -50,14 +57,13 @@ public class MByHaveConfiguration {
     private final List<Method> afterMethods;
     private final List<Method> afterClassMethods;
     /**
-     * @param keywords
-     * @param candidates
-     * @param stories
-     * @param testClass
-     * @param beforeClassMethods
-     * @param beforeMethods
-     * @param afterMethods
-     * @param afterClassMethods
+     * @param keywords The keywords used as step definitions and descriptions. (NonNull)
+     * @param candidates The step candidates to be matched to the step descriptios. (NonNull)
+     * @param testClass The test class. (NonNull)
+     * @param beforeClassMethods The list of the {@link org.junit.BeforeClass} annotated methods in the test class. (NonNull)
+     * @param beforeMethods The list of the {@link org.junit.Before} annotated methods in the test class. (NonNull)
+     * @param afterMethods The list of the {@link org.junit.After} annotated methods in the test class. (NonNull)
+     * @param afterClassMethods The list of the {@link org.junit.AfterClass} annotated methods in the test class. (NonNull)
      */
     public MByHaveConfiguration(final Map<Class<? extends Annotation>, StepKeyword> keywords,
                                 final Map<Class<? extends Annotation>, List<StepCandidate>> candidates,
@@ -74,48 +80,53 @@ public class MByHaveConfiguration {
         this.afterMethods       = afterMethods;
         this.afterClassMethods  = afterClassMethods;
     }
+
     /**
-     * @return the keywords
+     * @return The keywords used as step definitions and descriptions. (NonNull)
      */
     public Map<Class<? extends Annotation>, StepKeyword> getKeywords() {
         return keywords;
     }
+
     /**
-     * @return the candidates
+     * @return The step candidates to be matched to the step descriptios. (NonNull)
      */
     public Map<Class<? extends Annotation>, List<StepCandidate>> getCandidates() {
         return candidates;
     }
+
     /**
-     * @return the testClass
+     * @return The test class. (NonNull)
      */
     public Class<?> getTestClass() {
         return testClass;
     }
     /**
-     * @return the beforeClassMethods
+     * @return The list of the {@link org.junit.BeforeClass} annotated methods in the test class. (NonNull)
      */
     public List<Method> getBeforeClassMethods() {
         return beforeClassMethods;
     }
+
     /**
-     * @return the beforeMethods
+     * @return The list of the {@link org.junit.Before} annotated methods in the test class. (NonNull)
      */
     public List<Method> getBeforeMethods() {
         return beforeMethods;
     }
+
     /**
-     * @return the afterMethods
+     * @return The list of the {@link org.junit.After} annotated methods in the test class. (NonNull)
      */
     public List<Method> getAfterMethods() {
         return afterMethods;
     }
+
     /**
-     * @return the afterClassMethods
+     * @return The list of the {@link org.junit.AfterClass} annotated methods in the test class. (NonNull)
      */
     public List<Method> getAfterClassMethods() {
         return afterClassMethods;
     }
-
 
 }

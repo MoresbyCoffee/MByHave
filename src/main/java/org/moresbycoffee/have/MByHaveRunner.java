@@ -33,22 +33,17 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -63,10 +58,6 @@ import org.moresbycoffee.have.annotations.When;
 import org.moresbycoffee.have.domain.Scenario;
 import org.moresbycoffee.have.exceptions.MByHaveAssertionError;
 import org.moresbycoffee.have.exceptions.MByHaveException;
-
-import com.thoughtworks.paranamer.BytecodeReadingParanamer;
-import com.thoughtworks.paranamer.CachingParanamer;
-import com.thoughtworks.paranamer.Paranamer;
 
 
 /**
@@ -143,8 +134,10 @@ import com.thoughtworks.paranamer.Paranamer;
  * <h4>Roadmap</h4>
  * <h5>v1.0</h5>
  * <ul>
+ * <li><s>JUnit annotation support.</s></li>
  * <li>more javadoc</li>
- * <li>code cleanup - split up MByHaveRunner.</li>
+ * <li><s>code cleanup - split up MByHaveRunner.</s></li>
+ * <li>centeral maven repository deployment</li>
  * </ul>
  *
  * <h5>v1.1</h5>
