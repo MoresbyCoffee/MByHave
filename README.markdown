@@ -30,6 +30,28 @@ MByHave is delivered with a JUnit runner (plugin) which can parse story files an
 
 <h2>How to use</h2>
 
+<h3>Step 0.</h3>
+<p>Before you could use you have to download the lib from <a href="https://github.com/bsudy/mBy.have/downloads">the download page</a> or you can configure the maven to pull it out from the repository:</p>
+<pre>
+&lt;repositories&gt;
+    ...
+    &lt;repository&gt;
+        &lt;id&gt;Sonatype oss&lt;/id&gt;
+        &lt;url&gt;https://oss.sonatype.org/content/repositories/snapshots&lt;/url&gt;
+    &lt;/repository&gt;
+    ...
+&lt;/repositories&gt;
+...
+&lt;dependencies&gt;
+    ...
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.moresbycoffee&lt;/groupId&gt;
+        &lt;artifactId&gt;have&lt;/artifactId&gt;
+        &lt;version&gt;1.0.0-SNAPSHOT&lt;/version&gt;
+    &lt;/dependency&gt;
+    ...
+&lt;/dependencies&gt;
+</pre>
 <h3>Step 1. - Annotate your methods.</h3>
 
 <p>You can use the following annotations on your methods: @Given, @When and @Then. Each annotation takes a parameter, called value, which is a pattern which to the step descriptions will be matched later. The pattern can contain any text and placeholders of the method parameters. The parameters during the matching will be picked up from the step description and past to the method as defined parameter.</p>
