@@ -405,16 +405,16 @@ public class MByHaveRunner extends Runner {
     	final Map<Integer, MethodParameter> positions = candidate.getParameterPositions();
         int i = 1;
 
-        final SortedMap<Integer, String> methodParameters = new TreeMap<Integer, String>();
+        final SortedMap<Integer, Object> methodParameters = new TreeMap<Integer, Object>();
         for (final MethodParameter param : positions.values()) {
             final int starts = matcher.start(i);
             final int ends   = matcher.end(i);
 
             final String paramValue = step.substring(starts, ends);
-
+            
             LOG.finer("Param Value: " + paramValue + " Group: " + matcher.group(i));
             i++;
-
+            
             methodParameters.put(Integer.valueOf(param.getParamPos()), paramValue);
 
             LOG.finer("Parameter name: " + param.getParamName() + " Value: " + paramValue);

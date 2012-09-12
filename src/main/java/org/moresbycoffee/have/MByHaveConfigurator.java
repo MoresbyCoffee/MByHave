@@ -31,6 +31,7 @@ package org.moresbycoffee.have;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -148,7 +149,7 @@ public final class MByHaveConfigurator {
                 LOG.finer("Step definition: " + definitionValue);
 
                 /* Retrieves the method parameters. */
-                final String[] params = getParameters(method);
+                final Param[] params = getParameters(method);
                 /* Finds the parameters in the step definition string. */
                 final Map<Integer, MethodParameter> parameterPositions = findParameterPositions(params, definitionValue);
 
@@ -189,16 +190,22 @@ public final class MByHaveConfigurator {
         return null;
     }
 
-    private static String[] getParameters(final Method method) {
+    private static Param[] getParameters(final Method method) {
         final Paranamer paranamer = new CachingParanamer(new BytecodeReadingParanamer());
-        final String[] params = paranamer.lookupParameterNames(method, false);
+        final String[] paramNames = paranamer.lookupParameterNames(method, false);
+        final Type[]   types      = method.getGenericParameterTypes();
+        final Param[]  params     = new Param[types.length];
+        for (int i = 0; i < types.length; i++) {
+            params[i] = new Param(paramNames[i], types[i]);
+        }
         return params;
     }
 
-    private static String createRegEx(final String stepValue, final Collection<String> paramNames) {
+    private static String createRegEx(final String stepValue, final Collection<Param> params) {
         String regEx = Pattern.quote(stepValue);
 
-        for (final String paramName : paramNames) {
+        for (final Param param : params) {
+            final String paramName = param.getName();
             final String paramPlaceHolder = getPlaceholderPattern(paramName);
             regEx = regEx.replace(paramPlaceHolder, "\\E(.*)\\Q");
         }
@@ -209,29 +216,58 @@ public final class MByHaveConfigurator {
         return "$" + paramName;
     }
 
-    public static Map<Integer, MethodParameter> findParameterPositions(final String[] paramNames, final String stepValue) {
+    
+    private static class Param {
+        
+        private final String name;
+        private final Type   type;
+        /**
+         * @param name
+         * @param type
+         */
+        public Param(String name, Type type) {
+            super();
+            this.name = name;
+            this.type = type;
+        }
+        /**
+         * @return the name
+         */
+        public String getName() {
+            return name;
+        }
+        /**
+         * @return the type
+         */
+        public Type getType() {
+            return type;
+        }
+        
+    }
+    
+    public static Map<Integer, MethodParameter> findParameterPositions(final Param[] params, final String stepValue) {
 
         final Map<Integer, MethodParameter> result = new TreeMap<Integer, MethodParameter>();
-        if (paramNames != null) {
-            for (int i = 0; i < paramNames.length; i++) {
+        if (params != null) {
+            for (int i = 0; i < params.length; i++) {
 
-                final String paramName        = paramNames[i];
-                final String paramPlaceHolder = getPlaceholderPattern(paramName);
+                final Param  param            = params[i];
+                final String paramPlaceHolder = getPlaceholderPattern(param.getName());
                 final int    posInStepPattern = stepValue.indexOf(paramPlaceHolder);
 
-                LOG.fine("Parameter: " + paramName);
+                LOG.fine("Parameter: " + param);
                 LOG.fine("Position:  " + posInStepPattern);
 
                 /* Check there is only one appearance in the stepPattern. */
                 if (posInStepPattern < 0) {
-                    throw new MByHaveException("The pattern does not contain placeholder for the " + paramName + " parameter.");
+                    throw new MByHaveException("The pattern does not contain placeholder for the " + param + " parameter.");
                 }
-                if (stepValue.indexOf(paramPlaceHolder, posInStepPattern + paramName.length()) >= 0) {
-                    throw new MByHaveException("The pattern does contain more than one placeholder for the " + paramName + " parameter");
+                if (stepValue.indexOf(paramPlaceHolder, posInStepPattern + param.getName().length()) >= 0) {
+                    throw new MByHaveException("The pattern does contain more than one placeholder for the " + param + " parameter");
                 }
 
                 /* Add to the map. */
-                result.put(Integer.valueOf(posInStepPattern), new MethodParameter(paramName, i));
+                result.put(Integer.valueOf(posInStepPattern), new MethodParameter(param.getName(), i, param.getType()));
             }
         }
 

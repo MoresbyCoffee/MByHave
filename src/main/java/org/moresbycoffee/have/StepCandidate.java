@@ -29,6 +29,7 @@
 package org.moresbycoffee.have;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -52,22 +53,30 @@ public class StepCandidate {
 
         private final String paramName;
         private final int    paramPos;
+        private final Type   paramType;
 
         /**
-         * @param paramName
-         * @param paramPos
+         * @param paramName The name of the parameter.
+         * @param paramPos The position of the parameter.
+         * @param paramType The type of the parameter.
          */
-        public MethodParameter(final String paramName, final int paramPos) {
+        public MethodParameter(final String paramName, final int paramPos, final Type paramType) {
             super();
             this.paramName = paramName;
             this.paramPos  = paramPos;
+            this.paramType = paramType;
         }
 
         public String getParamName() {
             return paramName;
         }
+        
         public int getParamPos() {
             return paramPos;
+        }
+        
+        public Type getType() {
+            return paramType;
         }
 
     }
