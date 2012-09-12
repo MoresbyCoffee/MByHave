@@ -31,6 +31,7 @@ package org.moresbycoffee.have;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -85,6 +86,7 @@ public class StepCandidate {
     private final Method                        method;
     private final Pattern                       pattern;
     private final Map<Integer, MethodParameter> parameterPositions;
+    private final List<MethodParameter>         returnValueParameters;
 
 
     /**
@@ -96,11 +98,13 @@ public class StepCandidate {
     public StepCandidate(final String stepDefinition,
     					 final Method method,
     					 final Map<Integer, MethodParameter> parameterPositions,
+    					 final List<MethodParameter> returnValueParameters,
     					 final String regEx) {
-        this.stepDefinition     = stepDefinition;
-        this.method             = method;
-        this.parameterPositions = Collections.unmodifiableMap(parameterPositions);
-        this.pattern            = Pattern.compile(regEx);
+        this.stepDefinition        = stepDefinition;
+        this.method                = method;
+        this.parameterPositions    = Collections.unmodifiableMap(parameterPositions);
+        this.returnValueParameters = Collections.unmodifiableList(returnValueParameters);
+        this.pattern               = Pattern.compile(regEx);
     }
 
     public String getStepDefinition() {
@@ -113,6 +117,10 @@ public class StepCandidate {
 
     public Map<Integer, MethodParameter> getParameterPositions() {
         return parameterPositions;
+    }
+    
+    public List<MethodParameter> getReturnValueParameters() {
+        return returnValueParameters;
     }
 
     public Pattern getPattern() {

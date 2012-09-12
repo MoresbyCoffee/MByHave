@@ -54,6 +54,7 @@ import org.moresbycoffee.have.annotations.Then;
 import org.moresbycoffee.have.annotations.When;
 import org.moresbycoffee.have.exceptions.MByHaveException;
 
+import com.google.common.reflect.TypeToken;
 import com.thoughtworks.paranamer.BytecodeReadingParanamer;
 import com.thoughtworks.paranamer.CachingParanamer;
 import com.thoughtworks.paranamer.Paranamer;
@@ -152,7 +153,8 @@ public final class MByHaveConfigurator {
                 final Param[] params = getParameters(method);
                 /* Finds the parameters in the step definition string. */
                 final Map<Integer, MethodParameter> parameterPositions = findParameterPositions(params, definitionValue);
-
+                /* Find the parameters representing return values. */
+                final List<MethodParameter> returnValueParameters = findReturnValueParameters(params);
                 /* Logs the method parameters. */
                 if (LOG.isLoggable(Level.FINER)) {
                     for (final Map.Entry<Integer, MethodParameter> paramPos : parameterPositions.entrySet()) {
@@ -163,7 +165,7 @@ public final class MByHaveConfigurator {
 
                 LOG.finer("RegEx: " + regEx);
 
-                stepCandidatesList.add(new StepCandidate(definitionValue, method, parameterPositions, regEx));
+                stepCandidatesList.add(new StepCandidate(definitionValue, method, parameterPositions, returnValueParameters, regEx));
 
             }
         }
@@ -245,19 +247,41 @@ public final class MByHaveConfigurator {
         
     }
     
+    public static List<MethodParameter> findReturnValueParameters(final Param[] params) {
+        final List<MethodParameter> returnValueParameters = new ArrayList<MethodParameter>();
+        if (params != null) {
+            for (int i = 0; i < params.length; i++) {
+                final Param  param            = params[i];
+                if (isReturnValueParameter(param)) {
+                    returnValueParameters.add(new MethodParameter(param.getName(), i, param.getType()));
+                }
+            }
+        }
+        return returnValueParameters;
+                
+    }
+
+    private static boolean isReturnValueParameter(final Param param) {
+        return TypeToken.of(ReturnValue.class).isAssignableFrom(param.getType());
+    }
+    
     public static Map<Integer, MethodParameter> findParameterPositions(final Param[] params, final String stepValue) {
 
         final Map<Integer, MethodParameter> result = new TreeMap<Integer, MethodParameter>();
         if (params != null) {
             for (int i = 0; i < params.length; i++) {
 
-                final Param  param            = params[i];
+                final Param param = params[i];
+                if (isReturnValueParameter(param)) {
+                    continue;
+                }
+                
                 final String paramPlaceHolder = getPlaceholderPattern(param.getName());
                 final int    posInStepPattern = stepValue.indexOf(paramPlaceHolder);
 
                 LOG.fine("Parameter: " + param);
                 LOG.fine("Position:  " + posInStepPattern);
-
+                
                 /* Check there is only one appearance in the stepPattern. */
                 if (posInStepPattern < 0) {
                     throw new MByHaveException("The pattern does not contain placeholder for the " + param + " parameter.");

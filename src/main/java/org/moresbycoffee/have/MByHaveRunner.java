@@ -35,11 +35,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -173,6 +175,9 @@ public class MByHaveRunner extends Runner {
     /** Containers store any value for further use. The containers can identified by the container name. */
     @SuppressWarnings("rawtypes")
     private final Map<String, Container> containerMap = new HashMap<String, Container>();
+    /** The history of the return values of the steps. */
+    @SuppressWarnings("rawtypes")
+    private final LinkedList<ReturnValue> returnValueHistory = new LinkedList<ReturnValue>();
 
 //> CONSTRUCTORS
 
@@ -407,6 +412,33 @@ public class MByHaveRunner extends Runner {
         return new Scenario(scenarioDescription, steps);
     }
     
+    private Type getTypeFromReturnValue(final Type type) {
+        if (type instanceof ParameterizedType) {
+            return ((ParameterizedType) type).getActualTypeArguments()[0];
+        } else {
+            return TypeToken.of(Object.class).getType();
+        }
+        
+    }
+    
+    /**
+     * Returns the first matching result from the result history. The result history contains all the results of steps.
+     * 
+     * @param type The type what has to be matched. (NonNull)
+     * @return The found result. If there is no matching result, it will return <tt>null</tt>. (Nullable)
+     */
+    @SuppressWarnings("rawtypes")
+    private ReturnValue getReturnValueFromHistoryByType(final Type type) {
+        
+        final TypeToken returnValueType = TypeToken.of(getTypeFromReturnValue(type));
+        for (ReturnValue returnValue : returnValueHistory) {
+            if (returnValueType.isAssignableFrom(returnValue.getType())) {
+                return returnValue;
+            }
+        }
+        return null;
+    }
+    
     private void runCandidate(final Object testObject, final StepCandidate candidate, final Matcher matcher, final String step) throws MByHaveException {
 
     	LOG.fine("Run stepCandiate: " + candidate.getStepDefinition());
@@ -414,7 +446,16 @@ public class MByHaveRunner extends Runner {
         int i = 1;
 
         final SortedMap<Integer, Object> methodParameters = new TreeMap<Integer, Object>();
+        for (final MethodParameter param : candidate.getReturnValueParameters()) {
+            
+            @SuppressWarnings("rawtypes")
+            final ReturnValue paramObject = getReturnValueFromHistoryByType(param.getType());
+            
+            methodParameters.put(Integer.valueOf(param.getParamPos()), paramObject);
+        }
+        
         for (final MethodParameter param : positions.values()) {
+            
             final int starts = matcher.start(i);
             final int ends   = matcher.end(i);
 
@@ -441,19 +482,25 @@ public class MByHaveRunner extends Runner {
                         throw new MByHaveException("Container object can't be instantiated.", e);
                     } 
                 }
-                
             } else {
                 paramObject = paramValue;
             }
             
             methodParameters.put(Integer.valueOf(param.getParamPos()), paramObject);
 
-            LOG.finer("Parameter name: " + param.getParamName() + " Value: " + paramValue);
+            LOG.finer("Parameter name: " + param.getParamName() + " Value: " + paramObject);
         }
 
         LOG.finer("Num of params: " + candidate.getMethod().getParameterTypes().length);
 
-        invokeMethod(candidate.getMethod(), testObject, methodParameters.values().toArray());
+        final Object result = invokeMethod(candidate.getMethod(), testObject, methodParameters.values().toArray());
+        
+        if (!Void.TYPE.equals(candidate.getMethod().getReturnType())) {
+            final Type returnType = candidate.getMethod().getGenericReturnType();
+            @SuppressWarnings({ "rawtypes", "unchecked" })
+            final ReturnValue resultObject = new ReturnValue(returnType, result);
+            returnValueHistory.addFirst(resultObject);
+        }
 
     }
 
@@ -463,9 +510,9 @@ public class MByHaveRunner extends Runner {
         }
     }
 
-    private void invokeMethod(final Method method, final Object target, final Object... parameters) {
+    private Object invokeMethod(final Method method, final Object target, final Object... parameters) {
         try {
-            method.invoke(target, parameters);
+            return method.invoke(target, parameters);
         } catch (final IllegalArgumentException e) {
             throw new MByHaveException("The parameters could not be matched.", e);
         } catch (final IllegalAccessException e) {
