@@ -35,9 +35,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -58,6 +60,8 @@ import org.moresbycoffee.have.annotations.When;
 import org.moresbycoffee.have.domain.Scenario;
 import org.moresbycoffee.have.exceptions.MByHaveAssertionError;
 import org.moresbycoffee.have.exceptions.MByHaveException;
+
+import com.google.common.reflect.TypeToken;
 
 
 /**
@@ -165,6 +169,10 @@ public class MByHaveRunner extends Runner {
 	private final MByHaveConfiguration configuration;
 
     private final List<org.moresbycoffee.have.domain.Story> stories;
+
+    /** Containers store any value for further use. The containers can identified by the container name. */
+    @SuppressWarnings("rawtypes")
+    private final Map<String, Container> containerMap = new HashMap<String, Container>();
 
 //> CONSTRUCTORS
 
@@ -398,7 +406,7 @@ public class MByHaveRunner extends Runner {
         }
         return new Scenario(scenarioDescription, steps);
     }
-
+    
     private void runCandidate(final Object testObject, final StepCandidate candidate, final Matcher matcher, final String step) throws MByHaveException {
 
     	LOG.fine("Run stepCandiate: " + candidate.getStepDefinition());
@@ -415,7 +423,30 @@ public class MByHaveRunner extends Runner {
             LOG.finer("Param Value: " + paramValue + " Group: " + matcher.group(i));
             i++;
             
-            methodParameters.put(Integer.valueOf(param.getParamPos()), paramValue);
+            final Object paramObject;
+            if (TypeToken.of(Container.class).isAssignableFrom(param.getType())) {
+                
+                if (containerMap.containsKey(paramValue)) {
+                    //TODO check the type.
+                    paramObject = containerMap.get(paramValue);
+                } else {
+                    
+                    try {
+                        @SuppressWarnings("rawtypes")
+                        Container container = Container.class.getConstructor(Type.class).newInstance(param.getType());
+                        containerMap.put(paramValue, container);
+                        paramObject = container;
+                    } catch (Exception e) {
+                        /* This exception should not occur ever. */
+                        throw new MByHaveException("Container object can't be instantiated.", e);
+                    } 
+                }
+                
+            } else {
+                paramObject = paramValue;
+            }
+            
+            methodParameters.put(Integer.valueOf(param.getParamPos()), paramObject);
 
             LOG.finer("Parameter name: " + param.getParamName() + " Value: " + paramValue);
         }
@@ -438,7 +469,7 @@ public class MByHaveRunner extends Runner {
         } catch (final IllegalArgumentException e) {
             throw new MByHaveException("The parameters could not be matched.", e);
         } catch (final IllegalAccessException e) {
-            throw new MByHaveException("The annotatated method should be public.", e);
+            throw new MByHaveException("The annotated method should be public.", e);
         } catch (final InvocationTargetException e) {
             if (e.getTargetException() instanceof AssertionError) {
                 throw (AssertionError) e.getTargetException();
