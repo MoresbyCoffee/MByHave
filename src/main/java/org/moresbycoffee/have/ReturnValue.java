@@ -31,43 +31,56 @@ package org.moresbycoffee.have;
 import java.lang.reflect.Type;
 
 /**
- * 
+ * <p>The purpose of this class is to store return values from the <tt>step definition methods</tt>.</p>
+ * <p>If a <tt>step definition method</tt> has {@link ReturnValue} parameter, the parameter placeholder
+ * should be in <tt>step definition pattern</tt> because this value is passed to the method by the
+ * MByHave framework.</p>
+ * <p>The return value parameter will always represent the last return value of which the type matches
+ * to the ReturnValue's generic parameter (<code>T</code>).</p>
+ * <p>If there is no matching return value, a <tt>null</tt> object will be provided.</p>
+ *
+ * @param <T> The type of the cached return value.
  *
  * @author bsudy
  * @since 2012
  */
 public class ReturnValue<T> {
 
-    /** TODO javadoc. */
+    /** The type of the return value. (NonNull) */
     private final Type type;
-    /** TODO javadoc. */
-    private final T value;
     /**
-     * @param type
-     * @param value
+     * The value of the return value.
+     * Can be <tt>null</tt>, if the returned value was <tt>null</tt>. (Nullable)
      */
-    public ReturnValue(Type type, T value) {
+    private final T value;
+
+    /**
+     * @param type The type of the return value. (NonNull)
+     * @param value The value of the return value. (Nullable)
+     */
+    ReturnValue(final Type type, final T value) {
         super();
-        this.type = type;
+        this.type  = type;
         this.value = value;
     }
-    
+
     /**
-     * @return the type
+     * @return The type of the return value. (NonNull)
      */
     public Type getType() {
         return type;
     }
-    
+
     /**
-     * @return the value
+     * @return The value of the return value.
+     *         Can be <tt>null</tt>, if the returned value was <tt>null</tt>. (Nullable)
      */
     public T getValue() {
         return value;
     }
-    
-    
 
-    
-    
+
+
+
+
 }

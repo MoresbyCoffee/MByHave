@@ -31,41 +31,52 @@ package org.moresbycoffee.have;
 import java.lang.reflect.Type;
 
 /**
- * TODO javadoc.
+ * <p>The container stores a value and the type of the value.</p>
+ * <p>The container can be used to cache and pick up a named parameter. If a {@link Container}
+ * parameter is added to a <tt>step</tt> definition method, MByHave will pass there a cached
+ * container. The container will be picked up from a named cache (map) by the string in the
+ * <tt>step description</tt> matching to parameter placeholder.</p>
+ * <p>So the container's name is defined in the <tt>step description</tt> and therefore two
+ * steps with the same <tt>step definition method</tt> can use different containers.</p>
+ * <p>If there is no container existing under the given name, MByHave will create one with a <tt>null</tt>
+ * value.</p>
  *
- * @author bsudy
+ * @param <T> the type of the value in the container.
+ *
+ * @author barnabas.sudy@gmail.com
  * @since 2012
  */
 public class Container<T> {
 
-    /** TODO javadoc. */
+    /** The type of the container's value. (NonNull) */
     private final Type type;
-    /** TODO javadoc. */
+    /** The value of the container. (Nullable) */
     private T value;
 
     /**
-     * TODO javadoc.
+     * @param type The type of the container's value.
      */
-    public Container(final Type type) {
+    Container(final Type type) {
         this.type = type;
     }
 
     /**
-     * @return the value
+     * @return The type of the container's value.
      */
     public T getValue() {
         return value;
     }
 
     /**
-     * @param value the value to set
+     * @param value The value of the container to set. (Nullable)
      */
-    public void setValue(T value) {
+    public void setValue(final T value) {
+        //TODO the type should be checked
         this.value = value;
     }
-    
+
     /**
-     * @return the type
+     * @return The value of the container. (Nullable)
      */
     public Type getType() {
         return type;
