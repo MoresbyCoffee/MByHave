@@ -145,34 +145,35 @@ public final class MByHaveConfigurator {
         final List<StepCandidate> stepCandidatesList = new ArrayList<StepCandidate>();
         LOG.info("Init candidates");
         for (final Method method : testClass.getDeclaredMethods()) {
-            final String definitionValue = getAnnotationValue(annotation, method);
-            if (definitionValue != null) {
-                LOG.finer("Step definition: " + definitionValue);
-
-                /* Retrieves the method parameters. */
-                final Param[] params = getParameters(method);
-                /* Finds the parameters in the step definition string. */
-                final Map<Integer, MethodParameter> parameterPositions = findParameterPositions(params, definitionValue);
-                /* Find the parameters representing return values. */
-                final List<MethodParameter> returnValueParameters = findReturnValueParameters(params);
-                /* Logs the method parameters. */
-                if (LOG.isLoggable(Level.FINER)) {
-                    for (final Map.Entry<Integer, MethodParameter> paramPos : parameterPositions.entrySet()) {
-                        LOG.finer("Position: " + paramPos.getKey() + " Param: " + paramPos.getValue().getParamName());
+            final String[] definitionValues = getAnnotationValue(annotation, method);
+            if (definitionValues != null) {
+                for (final String definitionValue : definitionValues) {
+                    LOG.finer("Step definition: " + definitionValue);
+    
+                    /* Retrieves the method parameters. */
+                    final Param[] params = getParameters(method);
+                    /* Finds the parameters in the step definition string. */
+                    final Map<Integer, MethodParameter> parameterPositions = findParameterPositions(params, definitionValue);
+                    /* Find the parameters representing return values. */
+                    final List<MethodParameter> returnValueParameters = findReturnValueParameters(params);
+                    /* Logs the method parameters. */
+                    if (LOG.isLoggable(Level.FINER)) {
+                        for (final Map.Entry<Integer, MethodParameter> paramPos : parameterPositions.entrySet()) {
+                            LOG.finer("Position: " + paramPos.getKey() + " Param: " + paramPos.getValue().getParamName());
+                        }
                     }
+                    final String regEx = createRegEx(definitionValue, Arrays.asList(params));
+    
+                    LOG.finer("RegEx: " + regEx);
+    
+                    stepCandidatesList.add(new StepCandidate(definitionValue, method, parameterPositions, returnValueParameters, regEx));
                 }
-                final String regEx = createRegEx(definitionValue, Arrays.asList(params));
-
-                LOG.finer("RegEx: " + regEx);
-
-                stepCandidatesList.add(new StepCandidate(definitionValue, method, parameterPositions, returnValueParameters, regEx));
-
             }
         }
         return stepCandidatesList;
     }
 
-    private static <T extends Annotation> String getAnnotationValue(final Class<T> annotation, final Method method) {
+    private static <T extends Annotation> String[] getAnnotationValue(final Class<T> annotation, final Method method) {
         if (annotation == Given.class) {
             if (method.isAnnotationPresent(Given.class)) {
                 final Given given = method.getAnnotation(Given.class);

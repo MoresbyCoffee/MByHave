@@ -43,6 +43,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface When {
 
-    String value();
+    /** The step definition patterns. */
+    String[] value();
 
 }
