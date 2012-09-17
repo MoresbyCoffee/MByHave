@@ -545,6 +545,11 @@ public class MByHaveRunner extends Runner {
 
     private void processScenario(final Object testObject, final Scenario scenario) throws MByHaveException {
         LOG.info("Process Scenario: " + scenario.getDescription());
+        /* Clean up the cached values. */
+        returnValueHistory.clear();
+        containerMap.clear();
+        
+        /* Run the steps. */
         for (final String step : scenario.getSteps()) {
             processStep(testObject, step);
         }
@@ -620,6 +625,10 @@ public class MByHaveRunner extends Runner {
                 notifier.fireTestStarted(storyDescription.getDescription());
                 for (final ScenarioDescription scenarioDescription : storyDescription.getScenarios()) {
                     notifier.fireTestStarted(scenarioDescription.getDescription());
+
+                    /* Clean up the cached values. */
+                    returnValueHistory.clear();
+                    containerMap.clear();
 
                     final Object testObject = configuration.getTestClass().newInstance();
                     invokeMethods(configuration.getBeforeMethods(), testObject);

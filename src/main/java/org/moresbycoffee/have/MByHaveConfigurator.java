@@ -144,7 +144,7 @@ public final class MByHaveConfigurator {
     private static <T extends Annotation> List<StepCandidate> initStepCandidates(final Class<T> annotation, final Class<?> testClass) {
         final List<StepCandidate> stepCandidatesList = new ArrayList<StepCandidate>();
         LOG.info("Init candidates");
-        for (final Method method : testClass.getDeclaredMethods()) {
+        for (final Method method : testClass.getMethods()) {
             final String[] definitionValues = getAnnotationValue(annotation, method);
             if (definitionValues != null) {
                 for (final String definitionValue : definitionValues) {

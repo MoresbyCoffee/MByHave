@@ -9,24 +9,20 @@ package org.moresbycoffee.have;
 
 import static org.junit.Assert.*;
 
-import org.junit.runner.RunWith;
 import org.moresbycoffee.have.annotations.Given;
-import org.moresbycoffee.have.annotations.Story;
 import org.moresbycoffee.have.annotations.Then;
 
 /**
- * 
+ * Step definition for {@link ReturnValue} tests used by {@link ReturnValueTestEmbedded} and {@link ReturnValueTestStoryFile} test cases.
  *
- * @author bsudy
+ * @author Barnabas Sudy<barnabas.sudy@gmail.com>
  * @since 2012
  */
-@RunWith(MByHaveRunner.class)
-@Story(files = { "returnValue.story "})
-public class ReturnValueTest {
+public abstract class ReturnValueTest {
 
     private static final String TEST_STRING = "TestString";
 
-    @Given("a return value")
+    @Given("a string return value")
     public String returnValue() {
         return TEST_STRING;
     }
@@ -36,7 +32,7 @@ public class ReturnValueTest {
         return null;
     }
     
-    @Then("it is available in the next method")
+    @Then("the string return value is available in this method")
     public void assertReturnValue(ReturnValue<String> returnValue) {
         assertEquals(TEST_STRING, returnValue.getValue());
     }
@@ -48,6 +44,11 @@ public class ReturnValueTest {
     
     @Then("no Boolean return value existing")
     public void assertNoReturnValue(ReturnValue<Boolean> returnValue) {
+        assertNull(returnValue);
+    }
+    
+    @Then("the first scenarios return value shouldn't be here")
+    public void checkScenarioClear(ReturnValue<String> returnValue) {
         assertNull(returnValue);
     }
 }
