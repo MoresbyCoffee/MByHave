@@ -474,7 +474,7 @@ public class MByHaveRunner extends Runner {
                     
                     try {
                         @SuppressWarnings("rawtypes")
-                        Container container = Container.class.getConstructor(Type.class).newInstance(param.getType());
+                        Container container = Container.class.getDeclaredConstructor(Type.class).newInstance(param.getType());
                         containerMap.put(paramValue, container);
                         paramObject = container;
                     } catch (Exception e) {
