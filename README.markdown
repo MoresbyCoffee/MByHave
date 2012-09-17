@@ -214,10 +214,12 @@ The result is success
 <h2>Roadmap</h2>
 <h5>v1.0</h5>
 <ul>
-<li>maven repository deployment</li>
+<li><s>maven repository deployment</s></li>
 <li>more javadoc</li>
 <li><s>&#64;Before, &#64;After, &#64;BeforeClass and &#64;AfterClass support</s></li>
 <li><s>code cleanup - split up MByHaveRunner.<s></li>
+<li><s>Container support</s></li>
+<li><s>ReturnValue support</s></li>
 </ul>
 
 <h5>v1.1</h5>

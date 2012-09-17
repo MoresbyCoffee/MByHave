@@ -42,19 +42,14 @@ public class MByHaveAssertionError extends AssertionFailedError {
     /** @see java.io.Serializable */
     private static final long serialVersionUID = 1L;
 
-    /**
-     *
-     */
+    /** @see AssertionFailedError#AssertionFailedError() */
     public MByHaveAssertionError() {
         super();
     }
 
-    /**
-     * @param message
-     */
+    /** @see AssertionFailedError#AssertionFailedError(String) */
     public MByHaveAssertionError(final String message) {
         super(message);
     }
-
 
 }

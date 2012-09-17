@@ -39,24 +39,24 @@ package org.moresbycoffee.have.exceptions;
 public class MByHaveException extends RuntimeException {
 
     /** @see java.io.Serializable */
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	/** @see Exception#Exception() */
+    /** @see Exception#Exception() */
     public MByHaveException() {
         super();
     }
 
-	/** @see Exception#Exception(String, Throwable) */
+    /** @see Exception#Exception(String, Throwable) */
     public MByHaveException(final String message, final Throwable cause) {
         super(message, cause);
     }
 
-	/** @see Exception#Exception(String) */
+    /** @see Exception#Exception(String) */
     public MByHaveException(final String message) {
         super(message);
     }
 
-	/** @see Exception#Exception(Throwable) */
+    /** @see Exception#Exception(Throwable) */
     public MByHaveException(final Throwable cause) {
         super(cause);
     }
