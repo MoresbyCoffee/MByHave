@@ -31,9 +31,9 @@ public class ReturnValueTest {
         return TEST_STRING;
     }
     
-    @Given("an Integer return value")
+    @Given("a null Integer return value")
     public Integer intReturnValue() {
-        return Integer.MAX_VALUE;
+        return null;
     }
     
     @Then("it is available in the next method")
@@ -41,4 +41,13 @@ public class ReturnValueTest {
         assertEquals(TEST_STRING, returnValue.getValue());
     }
     
+    @Then("the null Integer is here")
+    public void assertNullReturnValue(ReturnValue<Integer> returnValue) {
+        assertNull(returnValue.getValue());
+    }
+    
+    @Then("no Boolean return value existing")
+    public void assertNoReturnValue(ReturnValue<Boolean> returnValue) {
+        assertNull(returnValue);
+    }
 }
