@@ -284,7 +284,7 @@ public final class MByHaveConfigurator {
                 
                 /* Check there is only one appearance in the stepPattern. */
                 if (posInStepPattern < 0) {
-                    throw new MByHaveException("The pattern does not contain placeholder for the " + param + " parameter.");
+                    throw new MByHaveException("The pattern does not contain placeholder for the " + param.getName() + " parameter.");
                 }
                 if (stepValue.indexOf(paramPlaceHolder, posInStepPattern + param.getName().length()) >= 0) {
                     throw new MByHaveException("The pattern does contain more than one placeholder for the " + param + " parameter");
