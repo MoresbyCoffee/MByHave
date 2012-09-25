@@ -405,7 +405,7 @@ public class MByHaveRunner extends Runner {
         }
         if (scenarioBuilder != null) {
             if (parseDescription) {
-                throw new MByHaveException("The scenario description does not contain any step description");
+                throw new MByHaveException("The scenario description does not contain any step description"); //TODO get the scenario description from somewhere.
             }
             steps.add(scenarioBuilder.toString());
         }

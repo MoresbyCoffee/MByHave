@@ -48,14 +48,14 @@ import java.util.regex.Pattern;
  * @author Barnabas Sudy (barnabas.sudy@gmail.com)
  * @since 2012
  */
-public class StepCandidate {
+public class StepCandidate implements Comparable<StepCandidate> {
 
     public static class MethodParameter {
 
         private final String paramName;
         private final int    paramPos;
         private final Type   paramType;
-
+        
         /**
          * @param paramName The name of the parameter.
          * @param paramPos The position of the parameter.
@@ -87,6 +87,8 @@ public class StepCandidate {
     private final Pattern                       pattern;
     private final Map<Integer, MethodParameter> parameterPositions;
     private final List<MethodParameter>         returnValueParameters;
+    /** The priority of the step candidate. The higher value should be picked up first. */
+    private final int                           priority;
 
 
     /**
@@ -94,17 +96,20 @@ public class StepCandidate {
      * @param method The method
      * @param parameterPositions The method parameters
      * @param regEx The regular expression
+     * @param int priority The priority of the step candidate. The higher value should be picked up first.
      */
     public StepCandidate(final String stepDefinition,
     					 final Method method,
     					 final Map<Integer, MethodParameter> parameterPositions,
     					 final List<MethodParameter> returnValueParameters,
-    					 final String regEx) {
+    					 final String regEx,
+    					 final int priority) {
         this.stepDefinition        = stepDefinition;
         this.method                = method;
         this.parameterPositions    = Collections.unmodifiableMap(parameterPositions);
         this.returnValueParameters = Collections.unmodifiableList(returnValueParameters);
         this.pattern               = Pattern.compile(regEx);
+        this.priority              = priority;
     }
 
     public String getStepDefinition() {
@@ -125,6 +130,43 @@ public class StepCandidate {
 
     public Pattern getPattern() {
         return pattern;
+    }
+    
+    /**
+     * @return the priority The priority of the step candidate. The higher value should be picked up first.
+     */
+    public int getPriority() {
+        return priority;
+    }
+    
+    /** {@inheritDoc} */
+    public int compareTo(StepCandidate that) {
+        if (that == null) {
+            return 1;
+        }
+        if (this.equals(that)) {
+            return 0;
+        }
+        
+        /* Check priority */
+        int result = (this.priority < that.priority) ? 1 : ((this.priority == that.priority) ? 0 : -1);
+        
+        /* Check step definition string. */
+        if (result == 0) {
+            result = this.stepDefinition.compareTo(that.stepDefinition);
+        }
+        
+        /* Compare methods. */
+        if (result == 0) {
+            result = this.method.toString().compareTo(that.method.toString());
+        }
+        
+        /* As a last attempt compare hash code. */
+        if (result == 0) {
+            result = (this.hashCode() < that.hashCode()) ? -1 : ((this.hashCode() == that.hashCode()) ? 0 : 1);
+        }
+         
+        return result;
     }
 
 }

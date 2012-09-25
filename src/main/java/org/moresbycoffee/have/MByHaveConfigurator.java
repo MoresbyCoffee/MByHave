@@ -146,6 +146,7 @@ public final class MByHaveConfigurator {
         LOG.info("Init candidates");
         for (final Method method : testClass.getMethods()) {
             final String[] definitionValues = getAnnotationValue(annotation, method);
+            final int priority = getAnnotationPriority(annotation, method);
             if (definitionValues != null) {
                 for (final String definitionValue : definitionValues) {
                     LOG.finer("Step definition: " + definitionValue);
@@ -166,10 +167,13 @@ public final class MByHaveConfigurator {
     
                     LOG.finer("RegEx: " + regEx);
     
-                    stepCandidatesList.add(new StepCandidate(definitionValue, method, parameterPositions, returnValueParameters, regEx));
+                    stepCandidatesList.add(new StepCandidate(definitionValue, method, parameterPositions, returnValueParameters, regEx, priority));
                 }
             }
         }
+        
+        Collections.sort(stepCandidatesList);
+        
         return stepCandidatesList;
     }
 
@@ -191,6 +195,26 @@ public final class MByHaveConfigurator {
             }
         }
         return null;
+    }
+
+    private static <T extends Annotation> int getAnnotationPriority(final Class<T> annotation, final Method method) {
+        if (annotation == Given.class) {
+            if (method.isAnnotationPresent(Given.class)) {
+                final Given given = method.getAnnotation(Given.class);
+                return given.priority();
+            }
+        } else if (annotation == When.class) {
+            if (method.isAnnotationPresent(When.class)) {
+                final When when = method.getAnnotation(When.class);
+                return when.priority();
+            }
+        } else if (annotation == Then.class) {
+            if (method.isAnnotationPresent(Then.class)) {
+                final Then then = method.getAnnotation(Then.class);
+                return then.priority();
+            }
+        }
+        return 0;
     }
 
     private static Param[] getParameters(final Method method) {
