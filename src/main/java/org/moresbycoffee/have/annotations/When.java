@@ -46,4 +46,7 @@ public @interface When {
     /** The step definition patterns. */
     String[] value();
 
+    /** The priority of the element. The higher priority will be picked up first. Default value: 0. */
+    int priority() default 0;
+
 }
