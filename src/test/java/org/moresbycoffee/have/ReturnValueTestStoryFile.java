@@ -32,13 +32,13 @@ import org.junit.runner.RunWith;
 import org.moresbycoffee.have.annotations.Story;
 
 /**
- * 
+ * Tests the {@link ReturnValue} implementation with multi-scenario story file.
  *
  * @author bsudy
  * @since 2012
  */
 @RunWith(MByHaveRunner.class)
-@Story(files = { "returnValue.story "})
+@Story(files = { "returnValue.story" })
 public class ReturnValueTestStoryFile extends ReturnValueTest {
 
 
