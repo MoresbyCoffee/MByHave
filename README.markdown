@@ -226,7 +226,7 @@ The result is success
 
 <h3>ReturnValue</h3>
 <p>The purpose of this class is to store return values from the <tt>step definition methods</tt>.</p>
-<p>If a <tt>step definition method</tt> has <tt>ReturnValue</tt> parameter, the parameter placeholder should be in <tt>step definition pattern</tt> because this value is passed to the method by the MByHave framework.</p>
+<p>If a <tt>step definition method</tt> has <tt>ReturnValue</tt> parameter, the parameter placeholder should not be in <tt>step definition pattern</tt> because this value is passed to the method by the MByHave framework.</p>
 <p>The return value parameter will always represent the last return value of which the type matches to the ReturnValue's generic parameter (<code>T</code>).</p>
 <p>If there is no matching return value, a <tt>null</tt> object will be provided.</p>
 
