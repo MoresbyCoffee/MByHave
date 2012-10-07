@@ -31,7 +31,7 @@ MByHave is delivered with a JUnit runner (plugin) which can parse story files an
 <h2>How to use</h2>
 
 <h3>Step 0.</h3>
-<p>Before you could use you have to download the lib from <a href="https://github.com/bsudy/mBy.have/downloads">the download page</a> or you can configure the maven to pull it out from the repository:</p>
+<p>Before you could use you have to download the lib from <a href="https://github.com/MoresbyCoffee/MByHave/downloads">the download page</a> or you can configure the maven to pull it out from the repository:</p>
 <pre>
 &lt;repositories&gt;
     ...
@@ -54,7 +54,10 @@ MByHave is delivered with a JUnit runner (plugin) which can parse story files an
 </pre>
 <h3>Step 1. - Annotate your methods.</h3>
 
-<p>You can use the following annotations on your methods: @Given, @When and @Then. Each annotation takes a parameter, called value, which is a pattern which to the step descriptions will be matched later. The pattern can contain any text and placeholders of the method parameters. The parameters during the matching will be picked up from the step description and past to the method as defined parameter.</p>
+<p>You can use the following annotations on your methods: @Given, @When and @Then. 
+Each annotation takes a array parameter, called value, this array contains the patters which will be matched to the step descriptions later. 
+The pattern can contain any text and placeholders of the method parameters. 
+The parameters during the matching will be picked up from the step description and past to the method as defined parameter.</p>
 <p><strong>Comment:</strong>
 Currently there is no autoconvert, the parameters of the methods have to be Strings.</p>
 
@@ -94,7 +97,15 @@ public void thenMethod(final String param) {
 }
 </pre>
 
-<p>The methods can't send information to each other through the MByHave API, the state of the test has to stored in the test class.</p>
+Then with multiple patterns:
+<pre class="brush:java">
+@Then({ "the result is $param", "the result should be $param" })
+public void thenMethod(final String param) {
+    &lt;&lt;test logic&gt;&gt;
+}
+</pre>
+
+<p><s>The methods can't send information to each other through the MByHave API, the state of the test has to stored in the test class.</s></p>
 
 <h3>Step 2. - Write tests</h3>
 <p>There are 3 ways to write tests but the third way is the officially suggested way.</p>
@@ -211,6 +222,97 @@ The result is success
 </ol>
 </ol>
 
+<h2>Extensions</h2>
+
+<h3>ReturnValue</h3>
+<p>The purpose of this class is to store return values from the <tt>step definition methods</tt>.</p>
+<p>If a <tt>step definition method</tt> has <tt>ReturnValue</tt> parameter, the parameter placeholder should be in <tt>step definition pattern</tt> because this value is passed to the method by the MByHave framework.</p>
+<p>The return value parameter will always represent the last return value of which the type matches to the ReturnValue's generic parameter (<code>T</code>).</p>
+<p>If there is no matching return value, a <tt>null</tt> object will be provided.</p>
+
+<h5>Example:</h5>
+<p>Test class:</p>
+<pre class="brush:java">
+private static final String TEST_STRING = "TestString";
+
+@Given("a string return value")
+public String returnValue() {
+    return TEST_STRING;
+}
+
+@Then("the string return value is available in this method")
+public void assertReturnValue(ReturnValue<String> returnValue) {
+    assertEquals(TEST_STRING, returnValue.getValue());
+}
+</pre>
+
+<h3>Container</h3>
+<p>The container stores a value and the type of the value.</p>
+<p>The container can be used to cache and pick up a named parameter. If a <tt>Container</tt> parameter is added to a <tt>step</tt> definition method, MByHave will pass there a cached container. The container will be picked up from a named cache (map) by the string in the <tt>step description</tt> matching to parameter placeholder.</p>
+<p>So the container's name is defined in the <tt>step description</tt> and therefore two steps with the same <tt>step definition method</tt> can use different containers.</p>
+<p>If there is no container existing under the given name, MByHave will create one with a <tt>null</tt>value.</p>
+
+
+<h5>Example:</h5>
+<p>Test class:</p>
+<pre class="brush:java">
+    @When("a $text is added to a container called: $container")
+    public void addToContainer(final String text, final Container<String> container) {
+        container.setValue(text);
+    }
+
+    @Then("the $container container should contain the $value")
+    public void checkContainer(final Container<String> container, final String value) {
+        assertEquals(value, container.getValue());
+    }
+</pre>
+<p>Story file</p>
+<pre class="brush:plain" >
+When a blah blah is added to a container called: testContainer
+Then the testContainer container should contain the blah blah
+</pre>
+
+<h3>Step priority</h3>
+<p>Sometimes it can happen that two patterns are matching to the same step description. 
+To handle these situations the <strong>step priority</strong> has been added to the MByHave.
+With the step priority you can prioritize your steps and define a proper order among them.
+The step with highest priority will be tired first and then the second highest etc.
+</p>
+
+<h5>Example:</h5>
+<p>Test class:</p>
+<pre class="brush:java">
+	private boolean firstTest = false; 
+    
+    @Given(value = "a method with a $parameter", priority = 1)
+    public void givenTestMethodA(final String parameter) {
+        fail();
+    }
+    
+    @Given(value = "a method with a $parameter plus something", priority = 2)
+    public void givenTestMethodB(final String parameter) {
+        firstTest = true;
+    }
+    
+    /**
+     * Tests priority in one direction. Methods in <i>false, right</i> order.
+     */
+    @Test 
+    public void testGivenPriority() {
+        new MByHave(this).given("a method with a parameter plus something");
+        assertTrue(firstTest);
+    }
+</pre>
+
+<h2>Change log</h2>
+<h5>v1.0 Beta</h5>
+<ul>
+<li>Multi pattern definitions</li>
+<li>Step definition priority</li>
+<li><tt>ReturnValue</tt> parameter type</li>
+<li><tt>Container</tt> parameter type</li>
+</ul>
+
 <h2>Roadmap</h2>
 <h5>v1.0</h5>
 <ul>
@@ -220,12 +322,12 @@ The result is success
 <li><s>code cleanup - split up MByHaveRunner.<s></li>
 <li><s>Container support</s></li>
 <li><s>ReturnValue support</s></li>
+<li>NetBeans test result fix</li>
 </ul>
 
 <h5>v1.1</h5>
 <ul>
 <li>auto parameter type conversion</li>
-<li>NetBeans test result fix</li>
 </ul>
 <h5>v1.2</h5>
 <ul>
@@ -233,6 +335,10 @@ The result is success
 <li>&#64;Rule Junit annotation support.</li>
 </ul>
 <h5>v2.0</h5>
+<ul>
+<li>spring integration</li>
+</ul>
+<h5>v3.0</h5>
 <ul>
 <li>android integration</li>
 </ul>
