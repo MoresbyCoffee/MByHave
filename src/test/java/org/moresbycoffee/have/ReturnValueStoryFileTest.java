@@ -39,7 +39,7 @@ import org.moresbycoffee.have.annotations.Story;
  */
 @RunWith(MByHaveRunner.class)
 @Story(files = { "returnValue.story" })
-public class ReturnValueTestStoryFile extends ReturnValueTest {
+public class ReturnValueStoryFileTest extends ReturnValueTest {
 
 
 }

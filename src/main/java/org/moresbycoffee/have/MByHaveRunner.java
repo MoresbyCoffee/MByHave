@@ -617,7 +617,7 @@ public class MByHaveRunner extends Runner {
     /** {@inheritDoc} */
     @Override
     public void run(final RunNotifier notifier) {
-        notifier.fireTestStarted(mainDescription);
+        notifier.fireTestStarted(getDescription());
 
         try {
             invokeMethods(configuration.getBeforeClassMethods(), null);

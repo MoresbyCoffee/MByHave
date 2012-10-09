@@ -28,26 +28,41 @@
  */
 package org.moresbycoffee.have;
 
-import org.junit.Test;
+import org.moresbycoffee.have.annotations.Given;
+import org.moresbycoffee.have.annotations.Story;
+import org.moresbycoffee.have.annotations.Then;
+import org.moresbycoffee.have.annotations.When;
 
 /**
- * Tests the return value and the cache cleaning with embedded scenarios.
+ * <p>Test the initialization error.</p> 
+ * <p><strong>WARNING:</strong>This test should fail. Do not commit it as live test!</p>
  *
  * @author bsudy
  * @since 2012
  */
-public class ReturnValueTestEmbedded extends ReturnValueTest {
-    
-    @Test
-    public void testReturnValue() {
-        MByHave mByHave = new MByHave(this);
-        mByHave.runScenario("Given a string return value\n" + 
-        		"Given a null Integer return value\n" + 
-        		"Then the string return value is available in this method\n" + 
-        		"Then the null Integer is here\n" + 
-        		"Then no Boolean return value existing\n"); 
-		mByHave.runScenario("Scenario second\n" + 
-        		"Then the first scenarios return value shouldn't be here");
+//@RunWith(MByHaveRunner.class)
+@Story(files = "storytest1.story")
+public class InitializationErrorTest {
+
+    private final String param;
+
+    public InitializationErrorTest(String param) {
+        this.param = param;
+    }
+
+    @Given("test")
+    public void firstMethod() {
+        System.out.println("First out");
+    }
+
+    @When("second method $param")
+    public void whenTestMethod(final String param) {
+        System.out.println("When test method: " + param);
+    }
+
+    @Then("third $param1 $param2 method")
+    public void thenTwoParamMethod(final String param1, final String param2) {
+        System.out.println("Then test param1: " + param1 + " param2: " + param2);
     }
 
 }
